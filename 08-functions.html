@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funciones en JavaScript</title>
+    <link rel="stylesheet" href="css/master.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .heading {
+            font-size: 1.4rem;
+            margin: 0.8rem 0;
+        }
+        .math-sign {
+            font-size: 1.4rem;
+        }
+        .calculator {
+            display: flex;
+            justify-content: center;
+            gap: 0.6rem;
+            margin: 0.8rem 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="controls">
+        <a href="index.html" aria-label="Volver">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                <path fill="#ffffff" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
+            </svg>
+        </a>
+    </nav>
+    <main>
+        <header>
+            <h1>Ejemplos de Funciones</h1>
+            <h2>Implementaciones prácticas de funciones en JavaScript</h2>
+        </header>
+        <section>
+            <h3>1. Función sin parámetros</h3>
+            <div class="heading" id="saludo"></div>
+            
+            <h3>2. Función con parámetros</h3>
+            <div class="calculator">
+                <input type="number" id="numero1" min="1" max="99999999" placeholder="Primer número">
+                <span class="math-sign"> + </span>
+                <input type="number" id="numero2" min="1" max="99999999" placeholder="Segundo número">
+                <span class="math-sign"> = </span>
+                <span class="math-sign" id="total"></span>
+            </div>
+            
+            <h3>3. Función que retorna valor</h3>
+            <div class="heading" id="hora-actual"></div>
+        </section>
+    </main>  
+    <script>
+        // Elementos del DOM
+        const elementos = {
+            saludo: document.getElementById('saludo'),
+            input1: document.getElementById('numero1'),
+            input2: document.getElementById('numero2'),
+            resultado: document.getElementById('total'),
+            hora: document.getElementById('hora-actual')
+        };
+
+        // 1. Mostrar mensaje de bienvenida
+        const mostrarBienvenida = () => {
+            elementos.saludo.textContent = "¡Bienvenido, Invitado! 👋";
+        };
+        mostrarBienvenida();
+
+        // 2. Calcular suma de dos números
+        const calcularSuma = (valor1, valor2) => {
+            if (valor1 && valor2) {
+                elementos.resultado.textContent = Number(valor1) + Number(valor2);
+            }
+        };
+
+        // Eventos para los inputs
+        elementos.input1.addEventListener('input', () => {
+            calcularSuma(elementos.input1.value, elementos.input2.value);
+        });
+
+        elementos.input2.addEventListener('input', function() {
+            calcularSuma(this.value, elementos.input1.value);
+        });
+
+        // 3. Obtener hora actual formateada
+        const obtenerHora = () => {
+            const ahora = new Date();
+            const esAM = ahora.getHours() < 12;
+            return `${ahora.getHours()}:${ahora.getMinutes().toString().padStart(2, '0')} ${esAM ? 'am' : 'pm'}`;
+        };
+
+        elementos.hora.textContent = `Hora actual: ${obtenerHora()}`;
+    </script>
+</body>
+</html>
