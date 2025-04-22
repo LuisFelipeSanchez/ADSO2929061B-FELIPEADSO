@@ -1,309 +1,424 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>07 Vehicle object</title>
-    <link rel="stylesheet" href="css/master.css">
+    <title>Velocistas Neon</title>
     <style>
+        /* ESTILOS CSS */
+        :root {
+            --neon-blue: #08f;
+            --neon-pink: #f0f;
+            --neon-green: #0f8;
+            --neon-purple: #80f;
+            --neon-orange: #ff8c00;
+            --dark-bg: #111;
+            --light-bg: #f0f0f0;
+            --dark-text: #fff;
+            --light-text: #333;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-        /**** Section Inicial ****/
+        body.light-mode {
+            background-color: var(--light-bg);
+            color: var(--light-text);
+        }
+
+        /* Fondo del desierto en movimiento */
+        .desert-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .desert-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1509316785289-025f5b846b35?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') repeat-x;
+            background-size: cover;
+            animation: moveDesert 30s linear infinite;
+        }
+
+        @keyframes moveDesert {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Capa para mejorar contraste */
+        .desert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: rgba(10, 5, 0, 0.6);
+        }
+
+        /* Carretera infinita neon */
+        .road-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            height: 40vh;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .infinite-road {
+            position: absolute;
+            bottom: 0;
+            width: 200%;
+            height: 100%;
+            background: 
+                linear-gradient(
+                    to right,
+                    rgba(0, 136, 255, 0.3) 0%,
+                    rgba(255, 0, 255, 0.3) 50%,
+                    rgba(0, 136, 255, 0.3) 100%
+                ),
+                repeating-linear-gradient(
+                    to bottom,
+                    #1a1a2e 0px,
+                    #1a1a2e 20px,
+                    #0f0f23 20px,
+                    #0f0f23 40px
+                );
+            animation: moveRoad 5s linear infinite;
+        }
+
+        .infinite-road::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: repeating-linear-gradient(
+                to right,
+                transparent 0px,
+                transparent 50px,
+                var(--neon-green) 50px,
+                var(--neon-green) 100px
+            );
+            transform: translateY(-50%);
+            box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        @keyframes moveRoad {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Contenido principal */
         section {
-            position: relative;
-        }
-        section div.header {
-            align-items: center;
+            height: 100vh;
             display: flex;
-            justify-content: space-between;
-            width: 380px;
-        }
-        section div.header button.btn-hidden {
-            visibility: hidden;
-        }
-        section div.header button {
-            border: none;
-            cursor: pointer;
-            height: 44px;
-            width: 44px;
-        }
-        section div.header button.btn-light {
-            background: transparent url(images/vehicle/Btn-mode-dia.svg);
-            background-size: contain;
-        }
-        section img.image {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 160px;
-            width: 110px;
-            height: 80px;
-        }
-        section button {
-            transition: all 0.2s ease-in;
-            &:hover {
-                transform: scale(1.1);
-            }
-        }
-
-        /**** Section de Atributos ****/
-        section div.attributes {
-            background: url(images/vehicle/Attributes.svg) no-repeat;
-            height: 120px;
-            margin: 1rem auto;
-            position: relative;
-            width: 380px;
-        }
-        section div.attributes span {
-            position: absolute;
-        }
-        section div.attributes span.brand {
-            top: 85px;
-            left: 4px;
-        }
-        section div.attributes span.refer {
-            top: 85px;
-            left: 110px;
-        }
-        section div.attributes span.model {
-            top: 85px;
-            left: 210px;
-        }
-        section div.attributes span.color {
-            top: 85px;
-            left: 300px;
-        }
- 
-        /**** Section de Menu Visual Carretera ****/
-        section div.landscape {
-            background-color: #fff9;
-            border: 3px solid #714eaa;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 5px;
-            height: 260px;
-            margin: 0 auto;
-            width: 374px;
-        }
-        section div.landscape button {
-            border: none;
-            cursor: pointer;
-            height: 44px;
-            width: 44px;
-        }
-        section div.landscape button.btn-prev {
-            background: url(images/vehicle/btn-izquierda.svg) no-repeat;
-        }
-        section div.landscape button.btn-next {
-            background: url(images/vehicle/btn-derecha.svg) no-repeat;
-        }
-
-        /**** Section de Metodos ****/
-        section div.methods {
-            background: url(images/vehicle/Metodos.svg) no-repeat;
-            width: 380px;
-            height: 110px;
-            display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 1rem;
-            margin: 1rem auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
         }
-        section div.methods button {
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            width: 80px;
+            height: 80px;
+            filter: drop-shadow(0 0 5px var(--neon-blue));
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+            margin: 15px 0;
+        }
+
+        .attributes {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+            backdrop-filter: blur(5px);
+        }
+
+        body.light-mode .attributes {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--light-text);
+        }
+
+        .character-image {
+            width: 250px;
+            height: 150px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 15px var(--neon-purple));
+            margin-bottom: 30px;
+        }
+
+        /* Botones */
+        .methods, .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        button {
+            background: rgba(30, 30, 40, 0.9);
             border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 2.3rem;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        body.light-mode button {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--light-text);
+        }
+
+        .btn-on {
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .btn-fwd {
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+        }
+
+        .btn-stop {
+            color: var(--neon-pink);
+            border: 1px solid var(--neon-pink);
+        }
+
+        .btn-off {
+            color: var(--neon-orange);
+            border: 1px solid var(--neon-orange);
+        }
+
+        .btn-prev, .btn-next {
+            color: var(--neon-purple);
+            border: 1px solid var(--neon-purple);
+        }
+
+        .btn-mode {
+            width: 50px;
             height: 50px;
-            width: 60px;
-        }
-        section div.methods button.btn-on {
-            background: url(images/vehicle/btn-encender.svg) no-repeat;
-        }
-        section div.methods button.btn-fwd {
-            background: url(images/vehicle/btn-arrancar.svg) no-repeat;
-        }
-        section div.methods button.btn-stop {
-            background: url(images/vehicle/btn-parar.svg) no-repeat;
-        }
-        section div.methods button.btn-bwd {
-            background: url(images/vehicle/btn-reversa.svg) no-repeat;
-        }
-        section div.methods button.btn-off {
-            background: url(images/vehicle/btn-apagar.svg) no-repeat;
+            border-radius: 50%;
+            font-size: 24px;
         }
 
-              /****| Section Night |***/
-        /**** Section attributes-night ****/
-        section.dark {
-            background-color: rgb(58, 58, 58);
-
-            div.header button.btn-light {
-                background: transparent url(images/vehicle/Btn-mode-noche.svg);
-                background-size: contain;
-                width: 49px;
-            }
-            div.attributes {
-                background: url(images/vehicle/Attributes-night.svg) no-repeat;
-                height: 120px;
-                margin: 1rem auto;
-                position: relative;
-                width: 380px;
-            }
-            div.methods {
-                background: url(images/vehicle/Metodos-night.svg) no-repeat;
-                width: 380px;
-                height: 110px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 1rem;
-                margin: 1rem auto;
-            }
+        button span {
+            font-size: 20px;
+            filter: drop-shadow(0 0 5px currentColor);
         }
 
-        /** Methods **/
-        .start {
-            animation: animStart 0.1s ease-in infinite;
-        }
-        @keyframes animStart {
-            100% {
-                bottom: 158px;
-            }
+        /* Animaciones */
+        .vibrate {
+            animation: vibrate 0.2s infinite alternate;
         }
 
+        @keyframes vibrate {
+            0% { transform: translateX(-2px); }
+            100% { transform: translateX(2px); }
+        }
+
+        .paused {
+            animation-play-state: paused !important;
+        }
     </style>
 </head>
 <body>
-    <nav class="controls">
-        <a href="index.html"> <!-- ../para devolverme  -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="#ffffff" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
-        </a>
-    </nav>
-    <main>
-        <header>
-            <h1>Vehicle object</h1>
-            <h2>Este ejercicio es una interface realizada en figma, para aplizar objetos.</h2>
-        </header>
-        <section>  <!--  se agrega  -->
-            <div class="header">
-                <button class="btn-hidden"></button>
-                <img src="images/vehicle/Title Principal.svg" alt="">
-                <button class="btn-light"></button>
-            </div>
-            <div class="attributes">
-                <span class="brand"></span>
-                <span class="refer"></span>
-                <span class="model"></span>
-                <span class="color"></span>
-            </div>
-            <img src="" class="image">
-            <div class="landscape">
-                <button class="btn-prev"></button>
-                <button class="btn-next"></button>
-            </div>
-            <div class="methods">
-                <button class="btn-on"></button>
-                <button class="btn-fwd"></button>
-                <button class="btn-stop"></button>
-                <button class="btn-bwd"></button>
-                <button class="btn-off"></button>
-            </div>
-        </section>
-    </main>  
+    <!-- Fondo del desierto en movimiento -->
+    <div class="desert-container">
+        <div class="desert-bg"></div>
+    </div>
+    <div class="desert-overlay"></div>
+    
+    <!-- Carretera neon -->
+    <div class="road-container">
+        <div class="infinite-road"></div>
+    </div>
+
+    <!-- Contenido principal -->
+    <section>
+        <div class="header">
+            <img src="images/moto/speedometer-abstract-symbol-speed-260nw-717040996__1_-removebg-preview.png" alt="Velocímetro">
+            <button class="btn-mode">🌙</button>
+        </div>
+
+        <h1>⚡ VELOCISTAS NEON ⚡</h1>
+
+        <div class="attributes">
+            <p><strong>PERSONAJE:</strong> <span id="brand">SONIC</span></p>
+            <p><strong>HABILIDAD:</strong> <span id="model">HIPER VELOCIDAD</span></p>
+            <p><strong>ESPECIE:</strong> <span id="species">ERIZO</span></p>
+            <p><strong>ORIGEN:</strong> <span id="origin">VIDEOJUEGOS</span></p>
+        </div>
+
+        <img src="images/moto/Sonic_The_Hedgehog_4_-_Sonic_Artwork_-_2.png" alt="Personaje" class="character-image" id="character-img">
+
+        <div class="methods">
+            <button class="btn-on"><span>🔋</span> ENCENDER</button>
+            <button class="btn-fwd"><span>🚀</span> ACELERAR</button>
+            <button class="btn-stop"><span>✋</span> FRENAR</button>
+            <button class="btn-off"><span>💤</span> APAGAR</button>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn-prev"><span>⏮️</span> ANTERIOR</button>
+            <button class="btn-next"><span>⏭️</span> SIGUIENTE</button>
+        </div>
+    </section>
+
+    <!-- JAVASCRIPT -->
     <script>
-        // Values
-        var index = 0
-        var engine = false
-        // DarkMode
-        const darkMode = window.matchMedia('(prefers-color-scheme: dark)')
-        // Elements
-        const btnMode = document.querySelector('.btn-light')
-        const section = document.querySelector('section')
-        const btnPrev = document.querySelector('.btn-prev')
-        const btnNext = document.querySelector('.btn-next')
-        const btnOn = document.querySelector('.btn-on')
-        const btnOff = document.querySelector('.btn-off')
-        // Attributes
-        const brand = document.querySelector('.brand')
-        const refer = document.querySelector('.refer')
-        const model = document.querySelector('.model')
-        const color = document.querySelector('.color')
-        const image = document.querySelector('.image')
-        // Btns: Events
-        btnMode.addEventListener('click', function() {
-            vehicle.mode()
-        })
-        btnOn.addEventListener('click', function() {
-            vehicle.start()
-        })
-        btnOff.addEventListener('click', function() {
-            vehicle.off()
-        })
-        
-        const vehicle = {
-            attributes:[
-                { brand: 'Yamaha',  refer: 'XT660',  model:2014, color: 'Verde',    image: 'images/vehicle/moto01.png'},
-                { brand: 'Harley', refer: 'Davison', model:2021, color: 'Negro', image: 'images/vehicle/moto02.png'},
-                { brand: 'Yamaha',  refer: 'Nmax',     model:2019, color: 'Rojo',      image: 'images/vehicle/moto03.png'},
-                { brand: 'Honda',   refer: 'GL1800', model:2023, color: 'Azul',     image: 'images/vehicle/moto04.png'},
-            ],
-            mode: function() {
-                section.classList.toggle('dark') 
+        // Elementos del DOM
+        const btnMode = document.querySelector('.btn-mode');
+        const road = document.querySelector('.infinite-road');
+        const desertBg = document.querySelector('.desert-bg');
+        const characterImg = document.getElementById('character-img');
+
+        // Datos de los personajes (¡usando tus imágenes locales!)
+        const characters = [
+            { 
+                brand: 'SONIC', 
+                model: 'HIPER VELOCIDAD', 
+                species: 'ERIZO', 
+                origin: 'VIDEOJUEGOS', 
+                image: 'images/moto/Sonic_The_Hedgehog_4_-_Sonic_Artwork_-_2.png' 
             },
-            showAttributes: function(i) {
-                brand.textContent = this.attributes[i].brand
-                refer.textContent = this.attributes[i].refer
-                model.textContent = this.attributes[i].model
-                color.textContent = this.attributes[i].color
-                image.setAttribute('src', this.attributes[i].image)
+            { 
+                brand: 'DASH', 
+                model: 'SUPER VELOCIDAD', 
+                species: 'META HUMANO', 
+                origin: 'LOS INCREÍBLES', 
+                image: 'images/moto/Dash_Parr-_1_-removebg-preview.png' 
             },
-            start: function() {
-                if(!engine) {
-                    image.classList.add('start')
-                    engine = true
-                }
+            { 
+                brand: 'CORRECAMINOS', 
+                model: 'BEEP BEEP', 
+                species: 'AVE RÁPIDA', 
+                origin: 'LOONEY TUNES', 
+                image: 'images/moto/png-clipart-wile-e-coyote-and-the-road-runner-plymouth-road-runner-cartoon-animation-looney-tunes-cowboy-s-cartoons-television-chicken-removebg-preview (2).png' 
             },
-            off: function() {
-                if(engine) {
-                    image.classList.remove('start')
-                    engine = false
-                }
+            { 
+                brand: 'FLASH', 
+                model: 'VELOCIDAD LUZ', 
+                species: 'META HUMANO', 
+                origin: 'DC COMICS', 
+                image: 'images/moto/1677181484613-removebg-preview.png' 
             }
+        ];
+
+        let currentCharacter = 0;
+        let engineOn = false;
+        let isMoving = false;
+
+        // Mostrar personaje actual
+        function showCharacter(index) {
+            const char = characters[index];
+            document.getElementById('brand').textContent = char.brand;
+            document.getElementById('model').textContent = char.model;
+            document.getElementById('species').textContent = char.species;
+            document.getElementById('origin').textContent = char.origin;
+            characterImg.src = char.image;
         }
-        
-        vehicle.showAttributes(0)
-        darkModeChange(darkMode)
-        btnPrev.style.opacity = '0.2'
 
-        btnNext.addEventListener('click', function() {
-            if (index < (vehicle.attributes.length)-1) {
-                btnPrev.style.opacity = '1'
-                vehicle.showAttributes(++index)
-                if (index == (vehicle.attributes.length)-1) {
-                    this.style.opacity = '0.2'
-                }
-            }
-        }) 
-        btnPrev.addEventListener('click', function() {
-            if (index > 0) {
-                btnNext.style.opacity = '1'
-                vehicle.showAttributes(--index)
-                if (index == 0) {
-                    this.style.opacity = '0.2'
-                }
-            }
-        })
+        // Cambiar modo claro/oscuro
+        btnMode.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            btnMode.textContent = document.body.classList.contains('light-mode') ? '🌙' : '☀️';
+        });
 
-        function darkModeChange(dmq) {
-            const isDarkMode = dmq.matches
-            if (isDarkMode) {
-                section.classList.add('dark')
-            } else {
-                section.classList.remove('dark')
-            }
-        }
-        darkMode.addListener(darkModeChange)
+        // Navegación entre personajes
+        document.querySelector('.btn-prev').addEventListener('click', () => {
+            currentCharacter = (currentCharacter - 1 + characters.length) % characters.length;
+            showCharacter(currentCharacter);
+        });
 
+        document.querySelector('.btn-next').addEventListener('click', () => {
+            currentCharacter = (currentCharacter + 1) % characters.length;
+            showCharacter(currentCharacter);
+        });
+
+        // Controles del personaje
+        document.querySelector('.btn-on').addEventListener('click', () => {
+            if (!engineOn) {
+                engineOn = true;
+                characterImg.classList.add('vibrate');
+                alert('⚡ ¡PODERES ACTIVADOS! ⚡');
+            }
+        });
+
+        document.querySelector('.btn-off').addEventListener('click', () => {
+            if (engineOn) {
+                engineOn = false;
+                isMoving = false;
+                characterImg.classList.remove('vibrate');
+                road.style.animationPlayState = 'paused';
+                desertBg.style.animationPlayState = 'paused';
+                alert('💤 Modo descanso activado');
+            }
+        });
+
+        document.querySelector('.btn-fwd').addEventListener('click', () => {
+            if (engineOn && !isMoving) {
+                isMoving = true;
+                road.style.animationPlayState = 'running';
+                desertBg.style.animationPlayState = 'running';
+                alert('🚀 ¡ACELERANDO AL MÁXIMO!');
+            }
+        });
+
+        document.querySelector('.btn-stop').addEventListener('click', () => {
+            if (engineOn && isMoving) {
+                isMoving = false;
+                road.style.animationPlayState = 'paused';
+                desertBg.style.animationPlayState = 'paused';
+                alert('✋ ¡FRENADO DE EMERGENCIA!');
+            }
+        });
+
+        // Inicializar
+        showCharacter(currentCharacter);
     </script>
 </body>
 </html>
