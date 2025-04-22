@@ -1,271 +1,585 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>13- Challenge</title>
-    <link rel="stylesheet" href="css/master.css">
+    <title>Calculadora Neon</title>
     <style>
-        div.calculator{
-            width: 280px;
-            height: 475px;
-            background-color: #EEEEEE;
-            margin: 1rem auto;
-            border-radius: 23px;
-
-            header.display{
-                position: relative;
-                height: 135px;
-                div.mode{
-                    width: 80px;
-                    position: absolute;
-                    top: 8px;
-                    height: 30px;
-                    transition: transform 0.4s ease-in;
-                    background: url("./images/calculator/mode.svg") no-repeat center;
-                    &:hover{
-                        cursor: pointer;
-                        transform: scale(1.1);
-                    }
-                }
-                input.operation{
-                    position: absolute;
-                    right: 0;
-                    top: 72px;
-                    right: 14px;
-                    text-align: right;
-                    background-color: transparent;
-                    border: none;
-                    font-size: 15px;
-                    font-weight: 400;
-                    font-family: Poppins, sans-serif;
-                    width: 260px;
-                    outline: none;
-                }
-                h4.result{
-                    position: absolute;
-                    right: 0;
-                    top: 95px;
-                    right: 14px;
-                    text-align: right;
-                    font-size: 30px;
-                    font-weight: 600;
-                    font-family: Poppins, sans-serif;
-                    color: #000;
-                    margin: 0;
-                }
-            }
-            footer.buttons{
-                background-color: #C1C1C1;
-                border-radius: 23px;
-                padding: 10px;
-                gap: 0;
-                grid-template-columns: repeat(4, 64px);
-                justify-content: center;
-                display: grid;
-                margin-top: 20px;
-                button{
-                    width: 64px;
-                    height: 64px;
-                    margin: 0;
-                    cursor: pointer;
-                    background: transparent;
-                    border-right: 2px #898989 solid;
-                    border-bottom: 2px #898989 solid;
-                    border-top: none;
-                    border-left: none;
-                    font-size: 30px;
-                    font-family: Poppins, sans-serif;
-                }
-                button.btn-mod, button.btn-prod, button.btn-subs, button.btn-add, button.btn-equal{
-                    border-right: none;
-                }
-                button.btn-div, button.btn-0, button.btn-dot, button.btn-equal{
-                    border-bottom: none;
-                }
-                button.btn-clear, .btn-back, .btn-pow, .btn-mod, .btn-prod, .btn-subs, .btn-add, .btn-dot, .btn-div{
-                    color: #EEEEEE;
-                }
-                button.btn-dot{
-                    font-size: 40px;
-                }
-                button:hover{
-                    transform: scale(1.1);
-                    border-right: 2px #898989 solid;
-                    border-bottom: 2px #898989 solid;
-                    border-top: 2px #898989 solid;
-                    border-left: 2px #898989 solid;
-                }
-            }
-
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
+        :root {
+            --neon-blue: #08f;
+            --neon-pink: #f0f;
+            --neon-green: #0f8;
+            --neon-purple: #80f;
+            --dark-bg: #111;
+            --light-bg: #f5f5f5;
+            --glow: 0 0 10px, 0 0 20px;
+            
+            /* Colores para tema claro */
+            --calc-bg-light: #ffffff;
+            --screen-bg-light: #f0f0f0;
+            --text-light: #333;
+            --btn-bg-light: #f8f8f8;
+            
+            /* Colores para tema oscuro */
+            --calc-bg-dark: rgba(20, 20, 30, 0.9);
+            --screen-bg-dark: rgba(0, 0, 0, 0.7);
+            --text-dark: var(--neon-green);
+            --btn-bg-dark: rgba(30, 30, 40, 0.9);
         }
-
-        div.calculator.dark{
-            background-color: #626262;
-            header.display{
-                div.mode{
-                    background: url("./images/calculator/mode-dark.svg") no-repeat center;
-                }
-                input.operation{
-                    color: #fff;
-                }
-                h4.result{
-                    color: #fff;
-                }
-            }
-            footer.buttons{
-                background-color: #2B2B2B;
-                button{
-                    border-right: 2px #fff solid;
-                    border-bottom: 2px #fff solid;
-                    color: #fff;
-                }
-                button.btn-clear, .btn-back, .btn-pow, .btn-mod, .btn-prod, .btn-subs, .btn-add, .btn-dot, .btn-div{
-                    color: #EEEEEE;
-                }
-                button.btn-mod, button.btn-prod, button.btn-subs, button.btn-add, button.btn-equal{
-                    border-right: none;
-                }
-                button.btn-div, button.btn-0, button.btn-dot, button.btn-equal{
-                    border-bottom: none;
-                }
-                button:hover{
-                    border-right: 2px #fff solid;
-                    border-bottom: 2px #fff solid;
-                    border-top: 2px #fff solid;
-                    border-left: 2px #fff solid;
-                }
-            }
-
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: var(--dark-bg);
+            font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        body.light-mode {
+            background: var(--light-bg);
+        }
+        
+        .calculadora {
+            width: 320px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 136, 255, 0.5);
+            background: var(--calc-bg-dark);
+            border: 2px solid var(--neon-blue);
+            position: relative;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+        
+        body.light-mode .calculadora {
+            background: var(--calc-bg-light);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+            border-color: #ccc;
+        }
+        
+        .calculadora::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            z-index: -1;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink), var(--neon-green), var(--neon-purple));
+            background-size: 400%;
+            border-radius: 20px;
+            opacity: 0.5;
+            animation: borderGlow 8s linear infinite;
+        }
+        
+        body.light-mode .calculadora::before {
+            opacity: 0.3;
+        }
+        
+        @keyframes borderGlow {
+            0% { background-position: 0 0; }
+            50% { background-position: 100% 0; }
+            100% { background-position: 0 0; }
+        }
+        
+        .pantalla {
+            padding: 25px 15px;
+            background-color: var(--screen-bg-dark);
+            color: var(--text-dark);
+            text-align: right;
+            font-size: 3rem;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            text-shadow: 0 0 10px var(--neon-green);
+            position: relative;
+            overflow: visible;
+            word-break: break-all;
+            transition: all 0.5s ease;
+        }
+        
+        body.light-mode .pantalla {
+            background-color: var(--screen-bg-light);
+            color: var(--text-light);
+            text-shadow: none;
+        }
+        
+        .pantalla::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(transparent 60%, rgba(0, 255, 136, 0.1));
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+        
+        body.light-mode .pantalla::after {
+            background: linear-gradient(transparent 60%, rgba(0, 0, 0, 0.05));
+        }
+        
+        .operacion-anterior {
+            font-size: 1.3rem;
+            color: var(--neon-blue);
+            height: 25px;
+            text-shadow: 0 0 5px var(--neon-blue);
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.5s ease;
+        }
+        
+        body.light-mode .operacion-anterior {
+            color: #666;
+            text-shadow: none;
+        }
+        
+        .resultado-actual {
+            font-weight: 700;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            font-size: 3rem;
+            line-height: 1.2;
+            min-height: 50px;
+            overflow: visible;
+            white-space: nowrap;
+            text-overflow: clip;
+        }
+        
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            padding: 10px;
+            background: rgba(10, 10, 20, 0.7);
+            transition: all 0.5s ease;
+        }
+        
+        body.light-mode .botones {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        button {
+            border: none;
+            padding: 20px 0;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--btn-bg-dark);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+            min-height: 60px;
+        }
+        
+        body.light-mode button {
+            background: var(--btn-bg-light);
+            color: var(--text-light);
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s;
+        }
+        
+        body.light-mode button::before {
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 136, 255, 0.4);
+        }
+        
+        body.light-mode button:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .operador {
+            color: var(--neon-blue);
+            font-size: 1.7rem;
+            font-weight: bold;
+        }
+        
+        body.light-mode .operador {
+            color: #007AFF;
+        }
+        
+        .igual {
+            color: white;
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-purple));
+            font-weight: bold;
+        }
+        
+        body.light-mode .igual {
+            background: linear-gradient(45deg, #FF2D55, #5856D6);
+        }
+        
+        .limpiar {
+            color: var(--neon-pink);
+            font-weight: bold;
+        }
+        
+        body.light-mode .limpiar {
+            color: #FF2D55;
+        }
+        
+        .potencia {
+            color: var(--neon-green);
+            font-weight: bold;
+        }
+        
+        body.light-mode .potencia {
+            color: #34C759;
+        }
+        
+        .numero {
+            color: white;
+            font-size: 1.7rem;
+        }
+        
+        body.light-mode .numero {
+            color: var(--text-light);
+        }
+        
+        .cero {
+            grid-column: span 2;
+        }
+        
+        /* Efectos de partículas */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--neon-blue);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: float 15s infinite linear;
+        }
+        
+        body.light-mode .particle {
+            background: rgba(0, 122, 255, 0.5);
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+        
+        /* Botón de cambio de tema */
+        .tema-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: rgba(30, 30, 40, 0.9);
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        body.light-mode .tema-btn {
+            background: var(--btn-bg-light);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--text-light);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 8px;
+            font-size: 0.7rem;
+            opacity: 0.7;
+            color: white;
+            transition: all 0.5s ease;
+        }
+        
+        body.light-mode .footer {
+            color: var(--text-light);
+        }
+        
+        /* Animaciones */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
     </style>
 </head>
 <body>
-    <nav class="controls">
-        <a href="index.html">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="#ffffff" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
-        </a>
-    </nav>
-    <main>
-        <header>
-            <h1>13- Challenge</h1>
-            <h2>Calculator</h2>
-        </header>
-        <section>
-            <div class="calculator">
-                <header class="display">
-                    <div class="mode"></div>
-                    <input type="text" class="operation" readonly>
-                    <h4 class="result"></h4>
-                </header>
-                <footer class="buttons">
-                    <!--  -->
-                    <button class="btn-clear">C</button>
-                    <button class="btn-back">&lt;</button>
-                    <button class="btn-pow" data-opt="**">^</button>
-                    <button class="btn-mod" data-opt="%">%</button>
-                    <!--  -->
-                    <button class="btn-1" data-num="1">1</button>
-                    <button class="btn-2" data-num="2">2</button>
-                    <button class="btn-3" data-num="3">3</button>
-                    <button class="btn-prod" data-opt="*">x</button>
-                    <!--  -->
-                    <button class="btn-4" data-num="4">4</button>
-                    <button class="btn-5" data-num="5">5</button>
-                    <button class="btn-6" data-num="6">6</button>
-                    <button class="btn-subs" data-opt="-">-</button>
-                    <!--  -->
-                    <button class="btn-7" data-num="7">7</button>
-                    <button class="btn-8" data-num="8">8</button>
-                    <button class="btn-9" data-num="9">9</button>
-                    <button class="btn-add" data-opt="+">+</button>
-                    <!--  -->
-                    <button class="btn-div" data-opt="/">/</button>
-                    <button class="btn-0" data-num="0">0</button>
-                    <button class="btn-dot" data-opt=".">.</button>
-                    <button class="btn-equal">=</button>
-                    <!--  -->
-                </footer>
-            </div>
-        </section>
-    </main>
+    <div class="particles" id="particles"></div>
+    
+    <div class="calculadora">
+        <div class="pantalla">
+            <div class="operacion-anterior" id="operacion-anterior"></div>
+            <div class="resultado-actual" id="resultado-actual">0</div>
+        </div>
+        <div class="botones">
+            <button class="limpiar" onclick="limpiar()">AC</button>
+            <button class="potencia" onclick="operacion('^')">^</button>
+            <button onclick="operacion('%')">%</button>
+            <button class="operador" onclick="operacion('/')">/</button>
+            
+            <button class="numero" onclick="agregarNumero('7')">7</button>
+            <button class="numero" onclick="agregarNumero('8')">8</button>
+            <button class="numero" onclick="agregarNumero('9')">9</button>
+            <button class="operador" onclick="operacion('*')">×</button>
+            
+            <button class="numero" onclick="agregarNumero('4')">4</button>
+            <button class="numero" onclick="agregarNumero('5')">5</button>
+            <button class="numero" onclick="agregarNumero('6')">6</button>
+            <button class="operador" onclick="operacion('-')">-</button>
+            
+            <button class="numero" onclick="agregarNumero('1')">1</button>
+            <button class="numero" onclick="agregarNumero('2')">2</button>
+            <button class="numero" onclick="agregarNumero('3')">3</button>
+            <button class="operador" onclick="operacion('+')">+</button>
+            
+            <button class="numero cero" onclick="agregarNumero('0')">0</button>
+            <button class="numero" onclick="agregarDecimal()">.</button>
+            <button class="igual" onclick="calcular()">=</button>
+        </div>
+        
+        <button class="tema-btn" id="tema-btn">Cambiar a Tema Claro</button>
+        
+        <div class="footer">2025 CALCULADORA ADSO 2020061B</div>
+    </div>
+
     <script>
-        // isDarkMode
-        const calculator = document.querySelector('.calculator')
-        const btnMode    = document.querySelector('.mode')
-        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)')
-        function detectMode() {
-            if(isDarkMode.matches) {
-                calculator.classList.add('dark')
-                //console.log('Mode: Dark')
-            } else {
-                calculator.classList.remove('dark')
-                //console.log('Mode: Light')
-            }
-        }
-        detectMode()
-        isDarkMode.addListener(detectMode)
-        btnMode.addEventListener('click', () => {
-            calculator.classList.toggle('dark')
-        })
-        // Buttons actions - - - - - - - - -
-        const btnsNumbers = document.querySelectorAll("button[data-num]")
-        const btnsOpers   = document.querySelectorAll("button[data-opt]")
-        const btnClear    = document.querySelector(".btn-clear")
-        const btnBack     = document.querySelector(".btn-back")
-        const btnEqual    = document.querySelector(".btn-equal")
-        const operation   = document.querySelector(".operation")
-        const result      = document.querySelector(".result")
-        let isOper        = false
-
-        function addToOperation(c) {
-            if (validateLength()) {
-                operation.value += c
-            }
+        // Crear partículas
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            particle.style.animationDelay = `${Math.random() * 15}s`;
+            particle.style.width = `${Math.random() * 3 + 1}px`;
+            particle.style.height = particle.style.width;
+            particlesContainer.appendChild(particle);
         }
 
-        function validateLength() {
-            if (operation.value.length <= 30) {
-                return true
-            }else{
-                return false
+        // Lógica de la calculadora
+        let valorActual = '';
+        let valorAnterior = '';
+        let operador = null;
+        let resetPantalla = false;
+
+        const pantallaActual = document.getElementById('resultado-actual');
+        const pantallaAnterior = document.getElementById('operacion-anterior');
+
+        function agregarNumero(numero) {
+            if (valorActual === '0' || resetPantalla) {
+                valorActual = '';
+                resetPantalla = false;
             }
+            valorActual += numero;
+            actualizarPantalla();
+            animarPantalla();
         }
 
-        btnsNumbers.forEach((btn) => {
-            btn.addEventListener("click", () => {
-                //addToOperation(btn.getAttribute("data-num"))
-                addToOperation(btn.dataset.num)
-                isOper = true
-            })
-        })
+        function agregarDecimal() {
+            if (resetPantalla) {
+                valorActual = '0.';
+                resetPantalla = false;
+                actualizarPantalla();
+                animarPantalla();
+                return;
+            }
+            if (valorActual.includes('.')) return;
+            if (valorActual === '') valorActual = '0';
+            valorActual += '.';
+            actualizarPantalla();
+            animarPantalla();
+        }
 
-        btnsOpers.forEach((btn) => {
-            btn.addEventListener("click", () => {
-                if (isOper) {
-                    addToOperation(btn.dataset.opt)
-                    isOper = false
+        function operacion(op) {
+            if (valorActual === '' && valorAnterior === '') return;
+            
+            if (op === '%') {
+                valorActual = (parseFloat(valorActual) / 100).toString();
+                actualizarPantalla();
+                animarPantalla('shrink');
+                return;
+            }
+            
+            if (op === '^') {
+                if (valorAnterior !== '') {
+                    calcular();
                 }
-            })
-        })
-
-        btnClear.addEventListener("click", function () {
-            operation.value = ""
-            result.textContent = ""
-        })
-
-        btnEqual.addEventListener("click", function() {
-            result.textContent = "=123"
-        })
-
-        btnBack.addEventListener("click", () => {
-            operation.value = operation.value.slice(0, -1)
-            if (isNaN(operation.value.slice(-1))) {
-                isOper = false
-            }else{
-                isOper = true
+                operador = '**';
+                valorAnterior = valorActual;
+                valorActual = '';
+                actualizarPantalla();
+                animarPantalla('slide');
+                return;
             }
-        })
+            
+            if (valorActual === '') {
+                operador = op;
+                return;
+            }
+            
+            if (valorAnterior !== '') {
+                calcular();
+            }
+            
+            operador = op;
+            valorAnterior = valorActual;
+            valorActual = '';
+            actualizarPantalla();
+            animarPantalla('slide');
+        }
+
+        function calcular() {
+            if (valorAnterior === '' || valorActual === '' || operador === null) return;
+            
+            let resultado;
+            const anterior = parseFloat(valorAnterior);
+            const actual = parseFloat(valorActual);
+            
+            switch (operador) {
+                case '+':
+                    resultado = anterior + actual;
+                    break;
+                case '-':
+                    resultado = anterior - actual;
+                    break;
+                case '*':
+                    resultado = anterior * actual;
+                    break;
+                case '/':
+                    resultado = anterior / actual;
+                    break;
+                case '**':
+                    resultado = Math.pow(anterior, actual);
+                    break;
+                default:
+                    return;
+            }
+            
+            valorActual = resultado.toString();
+            operador = null;
+            valorAnterior = '';
+            resetPantalla = true;
+            actualizarPantalla();
+            animarPantalla('pop');
+        }
+
+        function limpiar() {
+            valorActual = '';
+            valorAnterior = '';
+            operador = null;
+            pantallaAnterior.textContent = '';
+            pantallaActual.textContent = '0';
+            animarPantalla('shake');
+        }
+
+        function actualizarPantalla() {
+            pantallaActual.textContent = valorActual || '0';
+            if (operador !== null) {
+                const opDisplay = operador === '**' ? '^' : operador;
+                pantallaAnterior.textContent = `${valorAnterior} ${opDisplay}`;
+            } else {
+                pantallaAnterior.textContent = '';
+            }
+            
+            if (valorActual.length > 8) {
+                pantallaActual.style.fontSize = `${3 - (valorActual.length - 8) * 0.2}rem`;
+            } else {
+                pantallaActual.style.fontSize = '3rem';
+            }
+        }
+
+        function animarPantalla(tipo = 'pulse') {
+            pantallaActual.style.transform = 'scale(1)';
+            pantallaActual.style.opacity = '1';
+            
+            switch(tipo) {
+                case 'pulse':
+                    pantallaActual.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        pantallaActual.style.transform = 'scale(1)';
+                    }, 100);
+                    break;
+                case 'pop':
+                    pantallaActual.style.transform = 'scale(1.2)';
+                    pantallaActual.style.opacity = '0.8';
+                    setTimeout(() => {
+                        pantallaActual.style.transform = 'scale(1)';
+                        pantallaActual.style.opacity = '1';
+                    }, 200);
+                    break;
+                case 'shake':
+                    pantallaActual.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        pantallaActual.style.animation = '';
+                    }, 500);
+                    break;
+                case 'slide':
+                    pantallaAnterior.style.transform = 'translateY(-20px)';
+                    pantallaAnterior.style.opacity = '0';
+                    setTimeout(() => {
+                        pantallaAnterior.style.transform = 'translateY(0)';
+                        pantallaAnterior.style.opacity = '0.8';
+                    }, 300);
+                    break;
+            }
+        }
+
+        // Cambio de tema
+        const temaBtn = document.getElementById('tema-btn');
+        temaBtn.addEventListener('click', cambiarTema);
+        
+        function cambiarTema() {
+            document.body.classList.toggle('light-mode');
+            
+            if (document.body.classList.contains('light-mode')) {
+                temaBtn.textContent = 'Cambiar a Tema Oscuro';
+            } else {
+                temaBtn.textContent = 'Cambiar a Tema Claro';
+            }
+        }
     </script>
 </body>
 </html>
