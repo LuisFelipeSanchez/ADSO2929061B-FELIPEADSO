@@ -150,21 +150,24 @@
     // Configurar Three.js
     function initThreeJS() {
       scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-      renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+      camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
       renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-      camera.position.set(0, 0, 5); // Centrar la cámara
-      camera.lookAt(0, 0, 0); // Apuntar al centro
+      camera.position.set(0, 2, 6); // Ajustar posición de la cámara para ver el modelo
+      camera.lookAt(0, 0.5, 0);
 
-      // Luces
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      // Iluminación
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambientLight);
-      const pointLight = new THREE.PointLight(0x00ffcc, 1, 100);
-      pointLight.position.set(10, 10, 10);
-      scene.add(pointLight);
+      const directionalLight = new THREE.DirectionalLight(0x00ffcc, 1);
+      directionalLight.position.set(2, 2, 3);
+      scene.add(directionalLight);
+      const backLight = new THREE.DirectionalLight(0x0066ff, 0.5);
+      backLight.position.set(-2, -1, -1);
+      scene.add(backLight);
     }
 
-    // Crear modelo 3D con sprite
+    // Crear modelo 3D con Mesh y PlaneGeometry
     function createPokemonModel(spriteUrl, pokemonId) {
       if (pokemonMesh) scene.remove(pokemonMesh);
       errorMessage.classList.add('hidden');
@@ -172,8 +175,8 @@
         const texture = new THREE.TextureLoader().load(
           spriteUrl,
           () => {
-            // Forzar actualización del canvas
-            renderer.render(scene, camera);
+            console.log(`Textura cargada para Pokémon ID ${pokemonId}`);
+            renderer.render(scene, camera); // Forzar renderizado
           },
           undefined,
           (error) => {
@@ -182,11 +185,16 @@
             errorMessage.classList.remove('hidden');
           }
         );
-        const material = new THREE.SpriteMaterial({ map: texture });
-        pokemonMesh = new THREE.Sprite(material);
-        pokemonMesh.scale.set(6, 6, 1); // Tamaño más pequeño
-        pokemonMesh.position.set(0, 0, 0); // Centrar explícitamente
+        const material = new THREE.MeshBasicMaterial({ 
+          map: texture,
+          transparent: true,
+          side: THREE.DoubleSide
+        });
+        const geometry = new THREE.PlaneGeometry(3, 3); // Tamaño ajustado
+        pokemonMesh = new THREE.Mesh(geometry, material);
+        pokemonMesh.position.set(0, 0.5, 0); // Centrado con leve elevación
         scene.add(pokemonMesh);
+        console.log(`Modelo creado para Pokémon ID ${pokemonId}`);
       } catch (error) {
         console.error(`Error al crear el modelo para Pokémon ID ${pokemonId}:`, error);
         errorMessage.textContent = `Error al crear el modelo del Pokémon`;
@@ -194,17 +202,14 @@
       }
     }
 
-    // Animar modelo
+    // Animación de rotación
     function animate() {
       requestAnimationFrame(animate);
       if (pokemonMesh) {
-        pokemonMesh.rotation.y += 0.015; // Rotación suave solo en el eje Y
+        pokemonMesh.rotation.y += 0.01; // Rotación continua en Y
+        pokemonMesh.position.y = 0.5 + Math.sin(Date.now() * 0.001) * 0.1; // Pequeño movimiento vertical
       }
       renderer.render(scene, camera);
-      // Añadir una pequeña espera para asegurar que la animación inicial se ejecute
-      setTimeout(() => {
-        requestAnimationFrame(animate);
-      }, 100);
     }
 
     // Obtener datos del Pokémon
@@ -286,6 +291,13 @@
     });
     nextBtn.addEventListener('click', () => {
       if (currentPokemonId < 151) fetchPokemon(currentPokemonId + 1);
+    });
+
+    // Responsive
+    window.addEventListener('resize', () => {
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
     });
 
     // Inicializar
