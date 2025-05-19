@@ -33,6 +33,8 @@
     canvas {
       border-radius: 1rem;
       filter: drop-shadow(0 0 10px #00ffcc);
+      display: block;
+      margin: 0 auto;
     }
     #pokemon-grid {
       max-height: 500px;
@@ -78,6 +80,11 @@
     .neon-text {
       animation: pulse 2s infinite;
     }
+    .error-message {
+      color: #ff0066;
+      text-align: center;
+      font-weight: bold;
+    }
     @media (max-width: 640px) {
       #pokemon-grid {
         max-height: 300px;
@@ -95,8 +102,9 @@
         <button id="prev-btn" class="neon-btn text-white px-4 py-2 rounded-lg">←</button>
         <button id="next-btn" class="neon-btn text-white px-4 py-2 rounded-lg">→</button>
       </div>
-      <div id="pokemon-card" class="hidden bg-gray-900 rounded-lg p-6">
+      <div id="pokemon-card" class="bg-gray-900 rounded-lg p-6">
         <canvas id="pokemon-canvas" class="w-full h-96 mb-4"></canvas>
+        <div id="error-message" class="error-message hidden"></div>
         <h2 id="pokemon-name" class="text-2xl font-bold text-center capitalize text-cyan-300"></h2>
         <p id="pokemon-number" class="text-center text-gray-300"></p>
         <p id="pokemon-types" class="text-center text-gray-200 mb-4"></p>
@@ -110,6 +118,8 @@
   </div>
 
   <script>
+    console.log('Pokédex JavaScript inicializado');
+
     // Configurar partículas
     particlesJS('particles-js', {
       particles: {
@@ -130,6 +140,7 @@
 
     const card = document.getElementById('pokemon-card');
     const canvas = document.getElementById('pokemon-canvas');
+    const errorMessage = document.getElementById('error-message');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const pokemonGrid = document.getElementById('pokemon-grid');
@@ -139,10 +150,11 @@
     // Configurar Three.js
     function initThreeJS() {
       scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+      camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
       renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-      renderer.setSize(canvas.width, canvas.height);
-      camera.position.z = 5;
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      camera.position.set(0, 0, 5); // Centrar la cámara
+      camera.lookAt(0, 0, 0); // Apuntar al centro
 
       // Luces
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -153,29 +165,53 @@
     }
 
     // Crear modelo 3D con sprite
-    function createPokemonModel(spriteUrl) {
+    function createPokemonModel(spriteUrl, pokemonId) {
       if (pokemonMesh) scene.remove(pokemonMesh);
-      const texture = new THREE.TextureLoader().load(spriteUrl);
-      const material = new THREE.SpriteMaterial({ map: texture });
-      pokemonMesh = new THREE.Sprite(material);
-      pokemonMesh.scale.set(5, 5, 1);
-      scene.add(pokemonMesh);
+      errorMessage.classList.add('hidden');
+      try {
+        const texture = new THREE.TextureLoader().load(
+          spriteUrl,
+          () => {
+            // Forzar actualización del canvas
+            renderer.render(scene, camera);
+          },
+          undefined,
+          (error) => {
+            console.error(`Error al cargar la textura para Pokémon ID ${pokemonId} (${spriteUrl}):`, error);
+            errorMessage.textContent = `No se pudo cargar la imagen del Pokémon`;
+            errorMessage.classList.remove('hidden');
+          }
+        );
+        const material = new THREE.SpriteMaterial({ map: texture });
+        pokemonMesh = new THREE.Sprite(material);
+        pokemonMesh.scale.set(6, 6, 1); // Tamaño más pequeño
+        pokemonMesh.position.set(0, 0, 0); // Centrar explícitamente
+        scene.add(pokemonMesh);
+      } catch (error) {
+        console.error(`Error al crear el modelo para Pokémon ID ${pokemonId}:`, error);
+        errorMessage.textContent = `Error al crear el modelo del Pokémon`;
+        errorMessage.classList.remove('hidden');
+      }
     }
 
     // Animar modelo
     function animate() {
       requestAnimationFrame(animate);
       if (pokemonMesh) {
-        pokemonMesh.rotation.y += 0.02;
-        pokemonMesh.position.y = Math.sin(Date.now() * 0.001) * 0.2;
+        pokemonMesh.rotation.y += 0.015; // Rotación suave solo en el eje Y
       }
       renderer.render(scene, camera);
+      // Añadir una pequeña espera para asegurar que la animación inicial se ejecute
+      setTimeout(() => {
+        requestAnimationFrame(animate);
+      }, 100);
     }
 
     // Obtener datos del Pokémon
     async function fetchPokemon(id) {
       try {
         card.classList.add('hidden');
+        errorMessage.classList.add('hidden');
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
         if (!response.ok) throw new Error('Pokémon no encontrado');
         const data = await response.json();
@@ -204,13 +240,20 @@
           statsContainer.appendChild(statDiv);
         });
 
-        // Crear modelo 3D
-        const spriteUrl = data.sprites.other['official-artwork'].front_default;
-        createPokemonModel(spriteUrl);
+        // Seleccionar sprite con respaldo
+        let spriteUrl = data.sprites.other['official-artwork'].front_default || data.sprites.front_default;
+        if (!spriteUrl) {
+          console.warn(`No se encontró sprite para Pokémon ID ${id}, usando imagen de respaldo`);
+          spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+        }
+        createPokemonModel(spriteUrl, id);
 
         card.classList.remove('hidden');
       } catch (error) {
-        alert('Pokémon no encontrado. Intenta de nuevo.');
+        console.error(`Error al obtener Pokémon ID ${id}:`, error);
+        errorMessage.textContent = `No se pudo cargar el Pokémon`;
+        errorMessage.classList.remove('hidden');
+        card.classList.remove('hidden');
       }
     }
 
@@ -224,7 +267,7 @@
           const id = index + 1;
           const detailResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
           const detailData = await detailResponse.json();
-          const sprite = detailData.sprites.front_default;
+          const sprite = detailData.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
           const pokemonDiv = document.createElement('div');
           pokemonDiv.className = 'pokemon-item p-2 cursor-pointer rounded-lg flex justify-center';
