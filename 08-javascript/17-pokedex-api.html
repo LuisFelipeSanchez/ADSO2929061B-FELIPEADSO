@@ -222,11 +222,38 @@
         if (!response.ok) throw new Error('Pokémon no encontrado');
         const data = await response.json();
         currentPokemonId = data.id;
+        const typeIcons = {
+  normal: '⚪️',
+  fire: '🔥',
+  water: '💧',
+  electric: '⚡️',
+  grass: '🌿',
+  ice: '❄️',
+  fighting: '🥊',
+  poison: '☠️',
+  ground: '🌍',
+  flying: '🕊️',
+  psychic: '🔮',
+  bug: '🐛',
+  rock: '🪨',
+  ghost: '👻',
+  dragon: '🐉',
+  dark: '🌑',
+  steel: '⚙️',
+  fairy: '✨'
+};
+
 
         // Actualizar tarjeta
         document.getElementById('pokemon-name').textContent = data.name;
         document.getElementById('pokemon-number').textContent = `Nº ${data.id}`;
-        document.getElementById('pokemon-types').textContent = `Tipo: ${data.types.map(t => t.type.name).join(', ')}`;
+       document.getElementById('pokemon-types').innerHTML =
+  'Tipo: ' + data.types.map(t => {
+    const typeName = t.type.name;
+    const icon = typeIcons[typeName] || '';
+    return `${icon} <span style="text-transform: capitalize;">${typeName}</span>`;
+  }).join(', ');
+
 
         // Estadísticas
         const statsContainer = document.getElementById('pokemon-stats');
