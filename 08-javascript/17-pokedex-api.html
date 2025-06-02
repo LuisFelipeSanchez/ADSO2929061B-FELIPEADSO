@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PokéDex - Inicio</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
   <style>
     body {
@@ -24,12 +23,16 @@
       height: 100%;
       z-index: -1;
     }
-    #start-screen {
+    .interface {
       text-align: center;
       color: #fff;
       animation: fadeIn 1s ease-in;
+      display: none;
     }
-    #start-screen h1 {
+    .interface.active {
+      display: block;
+    }
+    #interface-1 h1, #interface-2 h1 {
       font-size: 3.5rem;
       background: linear-gradient(45deg, #ff0066, #00ffcc);
       -webkit-background-clip: text;
@@ -41,11 +44,12 @@
     #ash-pikachu-img {
       max-width: 60%;
       height: auto;
-      margin-bottom: 2rem;
+      margin: 0 auto;
+      display: block;
       filter: drop-shadow(0 0 10px #00ffcc);
       animation: bounce 2s infinite;
     }
-    #enter-btn {
+    #enter-btn, #back-btn {
       background: #ff3333;
       color: #fff;
       padding: 1rem 2rem;
@@ -60,47 +64,19 @@
       gap: 0.5rem;
       margin: 0 auto;
     }
-    #enter-btn:hover {
+    #enter-btn:hover, #back-btn:hover {
       transform: scale(1.1);
       box-shadow: 0 0 20px #ff3333;
     }
-    #enter-btn img {
-      width: 24px;
-      height: 24px;
-    }
-    #main-content {
-      display: none;
-      width: 100%;
-      max-width: 4xl;
-      padding: 6;
-      margin: 0 auto;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-20px); }
-    }
-    /* Estilos del Pokédex Futurista (manteniendo los originales) */
-    #pokemon-card {
-      transition: transform 0.5s ease, opacity 0.5s ease;
-      border: 2px solid #00ffcc;
-      box-shadow: 0 0 20px rgba(0, 255, 204, 0.5), 0 0 40px rgba(0, 255, 204, 0.3);
-      animation: scan 1s ease-in-out;
-    }
-    #pokemon-card.hidden {
-      transform: scale(0.8) translateY(50px);
-      opacity: 0;
-    }
-    canvas {
-      border-radius: 1rem;
-      filter: drop-shadow(0 0 10px #00ffcc);
-      display: block;
-      margin: 0 auto;
+    #enter-btn img, #back-btn img {
+      width: 48px;
+      height: 48px;
     }
     #pokemon-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(100px, 1fr));
+      gap: 1rem;
+      padding: 2rem;
       max-height: 500px;
       overflow-y: auto;
       scrollbar-width: thin;
@@ -117,108 +93,90 @@
       border-radius: 4px;
     }
     .pokemon-item {
-      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      padding: 0.5rem;
+      border: 2px solid #00ffcc;
+      border-radius: 10px;
+      transition: transform 0.3s;
     }
     .pokemon-item:hover {
       transform: scale(1.1);
-      box-shadow: 0 0 15px #00ffcc;
     }
-    @keyframes scan {
-      0% { transform: translateY(-20px); opacity: 0; }
-      50% { box-shadow: 0 0 30px #00ffcc; }
-      100% { transform: translateY(0); opacity: 1; }
+    .pokemon-item img {
+      width: 80px;
+      height: 80px;
     }
-    .neon-btn {
-      background: linear-gradient(45deg, #ff0066, #00ffcc);
-      transition: transform 0.2s, box-shadow 0.2s;
+    #pokemon-image {
+      width: 100%;
+      max-width: 400px;
+      height: 400px;
+      margin: 0 auto 2rem;
+      display: block;
+      border-radius: 1rem;
+      filter: drop-shadow(0 0 10px #00ffcc);
     }
-    .neon-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px #00ffcc;
-    }
-    .neon-text {
-      animation: pulse 2s infinite;
-    }
-    .error-message {
-      color: #ff0066;
-      text-align: center;
-      font-weight: bold;
+    #pokemon-details {
+      padding: 1rem;
+      max-width: 400px;
+      margin: 0 auto;
     }
     .stat-bar-container {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      padding: 4px 0;
+      gap: 2px;
+      padding: 2px 0;
     }
     .stat-bar-label {
       display: flex;
       justify-content: space-between;
-      font-size: 0.875rem;
+      font-size: 0.9rem;
       color: #00ffcc;
       font-weight: 600;
     }
     .stat-bar {
-      height: 10px;
+      height: 12px;
       background-color: #2d3748;
       border-radius: 5px;
       overflow: hidden;
-      max-width: 100%;
     }
     .stat-bar-fill {
       height: 100%;
       background: linear-gradient(45deg, #ff0066, #00ffcc);
       transition: width 0.5s ease;
     }
-    @media (max-width: 640px) {
-      #pokemon-grid {
-        max-height: 300px;
-      }
-      .stat-bar-label {
-        font-size: 0.75rem;
-      }
-      .stat-bar {
-        height: 8px;
-      }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
-    @keyframes pulse {
-      0% { text-shadow: 0 0 5px #00ffcc; }
-      50% { text-shadow: 0 0 20px #00ffcc, 0 0 30px #ff0066; }
-      100% { text-shadow: 0 0 5px #00ffcc; }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="particles-js"></div>
-  <div id="start-screen">
+  <div id="interface-1" class="interface active">
     <h1>PokéDex</h1>
-    <img id="ash-pikachu-img" src="https://example.com/ash-pikachu.png" alt="Ash con Pikachu">
+    <img id="ash-pikachu-img" src="images1/ash and pikachu.png" alt="Ash con Pikachu">
     <button id="enter-btn">
-      <img src="https://example.com/pokeball.png" alt="Pokébola"> enter
+      <img src="images1/pokebolagif.gif" alt="Pokébola"> enter
     </button>
   </div>
-  <div id="main-content">
-    <div class="w-full max-w-4xl p-6 relative z-10 flex flex-col md:flex-row gap-6">
-      <div class="flex-1">
-        <h1 class="text-4xl font-bold text-center mb-6 text-cyan-300 neon-text">Pokédex Futurista</h1>
-        <div class="flex justify-center gap-2 mb-4">
-          <button id="prev-btn" class="neon-btn text-white px-4 py-2 rounded-lg">←</button>
-          <button id="next-btn" class="neon-btn text-white px-4 py-2 rounded-lg">→</button>
-        </div>
-        <div id="pokemon-card" class="bg-gray-900 rounded-lg p-6">
-          <canvas id="pokemon-canvas" class="w-full h-96 mb-4"></canvas>
-          <div id="error-message" class="error-message hidden"></div>
-          <h2 id="pokemon-name" class="text-2xl font-bold text-center capitalize text-cyan-300"></h2>
-          <p id="pokemon-number" class="text-center text-gray-300"></p>
-          <p id="pokemon-types" class="text-center text-gray-200 mb-4"></p>
-          <div id="pokemon-stats" class="grid grid-cols-1 gap-2 text-sm"></div>
-        </div>
-      </div>
-      <div class="w-full md:w-80">
-        <h2 class="text-xl font-bold text-cyan-300 mb-4">Pokémon</h2>
-        <div id="pokemon-grid" class="bg-gray-900 rounded-lg p-4 grid grid-cols-3 gap-4 md:grid-cols-2"></div>
-      </div>
-    </div>
+  <div id="interface-2" class="interface">
+    <h1>PokéDex</h1>
+    <div id="pokemon-grid"></div>
+    <button id="back-btn-2" class="mt-4">
+      <img src="images1/pokebolagif.gif" alt="Pokébola"> atrás
+    </button>
+  </div>
+  <div id="interface-3" class="interface">
+    <img id="pokemon-image" src="" alt="Pokémon">
+    <div id="pokemon-details"></div>
+    <button id="back-btn-3" class="mt-4">
+      <img src="images1/pokebolagif.gif" alt="Pokébola" style="width: 24px; height: 24px;"> atrás
+    </button>
   </div>
 
   <script>
@@ -240,90 +198,44 @@
       }
     });
 
-    const card = document.getElementById('pokemon-card');
-    const canvas = document.getElementById('pokemon-canvas');
-    const errorMessage = document.getElementById('error-message');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const pokemonGrid = document.getElementById('pokemon-grid');
-    let scene, camera, renderer, pokemonMesh;
-    let currentPokemonId = 25; // Pikachu inicial
-    const totalPokemon = 1010; // Hasta la generación 9 (mayo 2025)
-
-    // Configurar Three.js
-    function initThreeJS() {
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 200);
-      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-      camera.position.set(0, 2, 6); // Ajustar posición de la cámara para ver el modelo
-      camera.lookAt(0, 0.5, 0);
-
-      // Iluminación
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-      scene.add(ambientLight);
-      const directionalLight = new THREE.DirectionalLight(0x00ffcc, 1);
-      directionalLight.position.set(2, 2, 3);
-      scene.add(directionalLight);
-      const backLight = new THREE.DirectionalLight(0x0066ff, 0.5);
-      backLight.position.set(-2, -1, -1);
-      scene.add(backLight);
+    // Mostrar/Ocultar interfaces
+    function showInterface(userInterfaceId) {
+      document.querySelectorAll('.interface').forEach(i => i.classList.remove('active'));
+      document.getElementById(userInterfaceId).classList.add('active');
     }
 
-    // Crear modelo 3D con Mesh y PlaneGeometry
-    function createPokemonModel(spriteUrl, pokemonId) {
-      if (pokemonMesh) scene.remove(pokemonMesh);
-      errorMessage.classList.add('hidden');
-      try {
-        const texture = new THREE.TextureLoader().load(
-          spriteUrl,
-          () => {
-            console.log(`Textura cargada para Pokémon ID ${pokemonId}`);
-            renderer.render(scene, camera); // Forzar renderizado
-          },
-          undefined,
-          (error) => {
-            console.error(`Error al cargar la textura para Pokémon ID ${pokemonId} (${spriteUrl}):`, error);
-            errorMessage.textContent = `No se pudo cargar la imagen del Pokémon`;
-            errorMessage.classList.remove('hidden');
-          }
-        );
-        const material = new THREE.MeshBasicMaterial({ 
-          map: texture,
-          transparent: true,
-          side: THREE.DoubleSide
-        });
-        const geometry = new THREE.PlaneGeometry(3, 3); // Tamaño ajustado
-        pokemonMesh = new THREE.Mesh(geometry, material);
-        pokemonMesh.position.set(0, 0.5, 0); // Centrado con leve elevación
-        scene.add(pokemonMesh);
-        console.log(`Modelo creado para Pokémon ID ${pokemonId}`);
-      } catch (error) {
-        console.error(`Error al crear el modelo para Pokémon ID ${pokemonId}:`, error);
-        errorMessage.textContent = `Error al crear el modelo del Pokémon`;
-        errorMessage.classList.remove('hidden');
+    // Cargar cuadrícula de Pokémon
+    async function loadPokemonGrid() {
+      const pokemonGrid = document.getElementById('pokemon-grid');
+      pokemonGrid.innerHTML = '';
+      const limit = 151; // Generación 1
+      for (let id = 1; id <= limit; id++) {
+        try {
+          const detailResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+          if (!detailResponse.ok) throw new Error(`Error al cargar Pokémon ID ${id}`);
+          const detailData = await detailResponse.json();
+          const sprite = detailData.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+          const pokemonDiv = document.createElement('div');
+          pokemonDiv.className = 'pokemon-item p-2 cursor-pointer rounded-lg flex justify-center';
+          pokemonDiv.innerHTML = `<img src="${sprite}" alt="${detailData.name}" class="w-16 h-16">`;
+          pokemonDiv.addEventListener('click', () => fetchPokemon(id));
+          pokemonGrid.appendChild(pokemonDiv);
+        } catch (error) {
+          console.error(`Error al cargar Pokémon ID ${id} para la cuadrícula:`, error);
+        }
       }
-    }
-
-    // Animación de rotación
-    function animate() {
-      requestAnimationFrame(animate);
-      if (pokemonMesh) {
-        pokemonMesh.rotation.y += 0.01; // Rotación continua en Y
-        pokemonMesh.position.y = 0.5 + Math.sin(Date.now() * 0.001) * 0.1; // Pequeño movimiento vertical
-      }
-      renderer.render(scene, camera);
     }
 
     // Obtener datos del Pokémon
     async function fetchPokemon(id) {
       try {
-        card.classList.add('hidden');
-        errorMessage.classList.add('hidden');
+        const card = document.getElementById('pokemon-details');
+        card.innerHTML = '';
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-        if (!response.ok) throw new Error('Pokémon no encontrado');
+        if (!response.ok) throw new Error(`Pokémon ID ${id} no encontrado`);
         const data = await response.json();
-        currentPokemonId = data.id;
+        console.log(`Datos obtenidos para Pokémon ID ${id}:`, data);
+        
         const typeIcons = {
           normal: '⚪️', fire: '🔥', water: '💧', electric: '⚡️', grass: '🌿',
           ice: '❄️', fighting: '🥊', poison: '☠️', ground: '🌍', flying: '🕊️',
@@ -331,124 +243,59 @@
           dark: '🌑', steel: '⚙️', fairy: '✨'
         };
 
-        // Actualizar tarjeta
-        document.getElementById('pokemon-name').textContent = data.name;
-        document.getElementById('pokemon-number').textContent = `Nº ${data.id}`;
-        document.getElementById('pokemon-types').innerHTML =
-          'Tipo: ' + data.types.map(t => {
-            const typeName = t.type.name;
-            const icon = typeIcons[typeName] || '';
-            return `${icon} <span style="text-transform: capitalize;">${typeName}</span>`;
-          }).join(', ');
-
-        // Estadísticas con barras de progreso
-        const statsContainer = document.getElementById('pokemon-stats');
-        statsContainer.innerHTML = '';
-        const statNames = {
-          'hp': 'HP',
-          'attack': 'Ataque',
-          'defense': 'Defensa',
-          'special-attack': 'Ataque Especial',
-          'special-defense': 'Defensa Especial',
-          'speed': 'Velocidad'
-        };
-        data.stats.forEach(stat => {
-          const statValue = Math.min(stat.base_stat, 200); // Limitar a 200
-          const statDiv = document.createElement('div');
-          statDiv.className = 'stat-bar-container';
-          statDiv.innerHTML = `
-            <div class="stat-bar-label">
-              <span>${statNames[stat.stat.name]}</span>
-              <span>${stat.base_stat}</span>
-            </div>
-            <div class="stat-bar">
-              <div class="stat-bar-fill" style="width: ${(statValue / 200) * 100}%"></div>
-            </div>
-          `;
-          statsContainer.appendChild(statDiv);
-        });
-
         // Seleccionar sprite con respaldo
         let spriteUrl = data.sprites.other['official-artwork'].front_default || data.sprites.front_default;
         if (!spriteUrl) {
-          console.warn(`No se encontró sprite para Pokémon ID ${id}, usando imagen de respaldo`);
+          console.warn(`No se encontró sprite en PokeAPI para Pokémon ID ${id}, usando URL de respaldo`);
           spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
         }
-        createPokemonModel(spriteUrl, id);
+        console.log(`Cargando imagen para Pokémon ID ${id}: ${spriteUrl}`);
 
-        card.classList.remove('hidden');
+        // Mostrar la imagen usando <img>
+        document.getElementById('pokemon-image').src = spriteUrl;
+
+        // Actualizar detalles con mejor espaciado
+        card.innerHTML = `
+          <h2 class="text-2xl font-bold text-center capitalize text-cyan-300 mb-2">${data.name}</h2>
+          <p class="text-center text-gray-300 mb-2">Nº ${data.id}</p>
+          <p class="text-center text-gray-200 mb-4">Tipo: ${data.types.map(t => {
+            const typeName = t.type.name;
+            const icon = typeIcons[typeName] || '';
+            return `${icon} <span style="text-transform: capitalize;">${typeName}</span>`;
+          }).join(', ')}</p>
+          <div class="grid grid-cols-1 gap-1 text-sm">
+            ${data.stats.map(stat => `
+              <div class="stat-bar-container">
+                <div class="stat-bar-label">
+                  <span>${stat.stat.name}</span>
+                  <span>${stat.base_stat}</span>
+                </div>
+                <div class="stat-bar">
+                  <div class="stat-bar-fill" style="width: ${(Math.min(stat.base_stat, 200) / 200) * 100}%"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        showInterface('interface-3');
       } catch (error) {
         console.error(`Error al obtener Pokémon ID ${id}:`, error);
-        errorMessage.textContent = `No se pudo cargar el Pokémon`;
-        errorMessage.classList.remove('hidden');
-        card.classList.remove('hidden');
       }
     }
 
-    // Cargar cuadrícula de Pokémon
-    async function loadPokemonGrid() {
-      try {
-        pokemonGrid.innerHTML = '';
-        const limit = totalPokemon; // Todas las generaciones hasta mayo 2025
-        for (let id = 1; id <= limit; id++) {
-          const detailResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-          const detailData = await detailResponse.json();
-          const sprite = detailData.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
-
-          const pokemonDiv = document.createElement('div');
-          pokemonDiv.className = 'pokemon-item p-2 cursor-pointer rounded-lg flex justify-center';
-          pokemonDiv.innerHTML = `<img src="${sprite}" alt="${detailData.name}" class="w-16 h-16">`;
-          pokemonDiv.addEventListener('click', () => fetchPokemon(id));
-          pokemonGrid.appendChild(pokemonDiv);
-        }
-      } catch (error) {
-        console.error('Error al cargar la cuadrícula de Pokémon:', error);
-      }
-    }
-
-    // Navegación
-    prevBtn.addEventListener('click', () => {
-      if (currentPokemonId > 1) fetchPokemon(currentPokemonId - 1);
-    });
-    nextBtn.addEventListener('click', () => {
-      if (currentPokemonId < totalPokemon) fetchPokemon(currentPokemonId + 1);
-    });
-
-    // Responsive
-    window.addEventListener('resize', () => {
-      camera.aspect = canvas.clientWidth / canvas.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    });
-
-    // Transición al hacer clic en "enter"
+    // Event listeners
     document.getElementById('enter-btn').addEventListener('click', () => {
-      document.getElementById('start-screen').style.display = 'none';
-      document.getElementById('main-content').style.display = 'block';
-      initThreeJS();
-      animate();
+      showInterface('interface-2');
       loadPokemonGrid();
-      fetchPokemon(25); // Iniciar con Pikachu
     });
 
-    // Inicializar pantalla de inicio
-    window.addEventListener('load', () => {
-      particlesJS('particles-js', {
-        particles: {
-          number: { value: 80, density: { enable: true, value_area: 800 } },
-          color: { value: '#00ffcc' },
-          shape: { type: 'circle' },
-          opacity: { value: 0.5, random: true },
-          size: { value: 3, random: true },
-          line_linked: { enable: true, distance: 150, color: '#00ffcc', opacity: 0.4, width: 1 },
-          move: { enable: true, speed: 2, direction: 'none', random: false }
-        },
-        interactivity: {
-          detect_on: 'canvas',
-          events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' } },
-          modes: { repulse: { distance: 100 }, push: { particles_nb: 4 } }
-        }
-      });
+    document.getElementById('back-btn-2').addEventListener('click', () => {
+      showInterface('interface-1');
+      document.getElementById('pokemon-grid').innerHTML = '';
+    });
+
+    document.getElementById('back-btn-3').addEventListener('click', () => {
+      showInterface('interface-2');
     });
   </script>
 </body>
