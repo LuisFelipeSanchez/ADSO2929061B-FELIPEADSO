@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pokédex Adso 2929061B</title>
+  <title>PokéDex - Inicio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
@@ -13,6 +13,10 @@
       overflow-x: hidden;
       background: linear-gradient(to bottom, #0d1b2a, #1b263b);
       font-family: 'Orbitron', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     #particles-js {
       position: fixed;
@@ -20,6 +24,66 @@
       height: 100%;
       z-index: -1;
     }
+    #start-screen {
+      text-align: center;
+      color: #fff;
+      animation: fadeIn 1s ease-in;
+    }
+    #start-screen h1 {
+      font-size: 3.5rem;
+      background: linear-gradient(45deg, #ff0066, #00ffcc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 10px #00ffcc;
+      margin-bottom: 2rem;
+    }
+    #ash-pikachu-img {
+      max-width: 60%;
+      height: auto;
+      margin-bottom: 2rem;
+      filter: drop-shadow(0 0 10px #00ffcc);
+      animation: bounce 2s infinite;
+    }
+    #enter-btn {
+      background: #ff3333;
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 0 auto;
+    }
+    #enter-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #ff3333;
+    }
+    #enter-btn img {
+      width: 24px;
+      height: 24px;
+    }
+    #main-content {
+      display: none;
+      width: 100%;
+      max-width: 4xl;
+      padding: 6;
+      margin: 0 auto;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    /* Estilos del Pokédex Futurista (manteniendo los originales) */
     #pokemon-card {
       transition: transform 0.5s ease, opacity 0.5s ease;
       border: 2px solid #00ffcc;
@@ -72,11 +136,6 @@
       transform: scale(1.05);
       box-shadow: 0 0 15px #00ffcc;
     }
-    @keyframes pulse {
-      0% { text-shadow: 0 0 5px #00ffcc; }
-      50% { text-shadow: 0 0 20px #00ffcc, 0 0 30px #ff0066; }
-      100% { text-shadow: 0 0 5px #00ffcc; }
-    }
     .neon-text {
       animation: pulse 2s infinite;
     }
@@ -85,7 +144,6 @@
       text-align: center;
       font-weight: bold;
     }
-    /* Estilos para las barras de estadísticas */
     .stat-bar-container {
       display: flex;
       flex-direction: column;
@@ -108,7 +166,7 @@
     }
     .stat-bar-fill {
       height: 100%;
-      background-color: #00ffcc;
+      background: linear-gradient(45deg, #ff0066, #00ffcc);
       transition: width 0.5s ease;
     }
     @media (max-width: 640px) {
@@ -122,36 +180,48 @@
         height: 8px;
       }
     }
+    @keyframes pulse {
+      0% { text-shadow: 0 0 5px #00ffcc; }
+      50% { text-shadow: 0 0 20px #00ffcc, 0 0 30px #ff0066; }
+      100% { text-shadow: 0 0 5px #00ffcc; }
+    }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center text-white">
+<body>
   <div id="particles-js"></div>
-  <div class="w-full max-w-4xl p-6 relative z-10 flex flex-col md:flex-row gap-6">
-    <div class="flex-1">
-      <h1 class="text-4xl font-bold text-center mb-6 text-cyan-300 neon-text">Pokédex Futurista</h1>
-      <div class="flex justify-center gap-2 mb-4">
-        <button id="prev-btn" class="neon-btn text-white px-4 py-2 rounded-lg">←</button>
-        <button id="next-btn" class="neon-btn text-white px-4 py-2 rounded-lg">→</button>
+  <div id="start-screen">
+    <h1>PokéDex</h1>
+    <img id="ash-pikachu-img" src="https://example.com/ash-pikachu.png" alt="Ash con Pikachu">
+    <button id="enter-btn">
+      <img src="https://example.com/pokeball.png" alt="Pokébola"> enter
+    </button>
+  </div>
+  <div id="main-content">
+    <div class="w-full max-w-4xl p-6 relative z-10 flex flex-col md:flex-row gap-6">
+      <div class="flex-1">
+        <h1 class="text-4xl font-bold text-center mb-6 text-cyan-300 neon-text">Pokédex Futurista</h1>
+        <div class="flex justify-center gap-2 mb-4">
+          <button id="prev-btn" class="neon-btn text-white px-4 py-2 rounded-lg">←</button>
+          <button id="next-btn" class="neon-btn text-white px-4 py-2 rounded-lg">→</button>
+        </div>
+        <div id="pokemon-card" class="bg-gray-900 rounded-lg p-6">
+          <canvas id="pokemon-canvas" class="w-full h-96 mb-4"></canvas>
+          <div id="error-message" class="error-message hidden"></div>
+          <h2 id="pokemon-name" class="text-2xl font-bold text-center capitalize text-cyan-300"></h2>
+          <p id="pokemon-number" class="text-center text-gray-300"></p>
+          <p id="pokemon-types" class="text-center text-gray-200 mb-4"></p>
+          <div id="pokemon-stats" class="grid grid-cols-1 gap-2 text-sm"></div>
+        </div>
       </div>
-      <div id="pokemon-card" class="bg-gray-900 rounded-lg p-6">
-        <canvas id="pokemon-canvas" class="w-full h-96 mb-4"></canvas>
-        <div id="error-message" class="error-message hidden"></div>
-        <h2 id="pokemon-name" class="text-2xl font-bold text-center capitalize text-cyan-300"></h2>
-        <p id="pokemon-number" class="text-center text-gray-300"></p>
-        <p id="pokemon-types" class="text-center text-gray-200 mb-4"></p>
-        <div id="pokemon-stats" class="grid grid-cols-1 gap-2 text-sm"></div>
+      <div class="w-full md:w-80">
+        <h2 class="text-xl font-bold text-cyan-300 mb-4">Pokémon</h2>
+        <div id="pokemon-grid" class="bg-gray-900 rounded-lg p-4 grid grid-cols-3 gap-4 md:grid-cols-2"></div>
       </div>
-    </div>
-    <div class="w-full md:w-80">
-      <h2 class="text-xl font-bold text-cyan-300 mb-4">Pokémon</h2>
-      <div id="pokemon-grid" class="bg-gray-900 rounded-lg p-4 grid grid-cols-3 gap-4 md:grid-cols-2"></div>
     </div>
   </div>
 
   <script>
-    console.log('Pokédex JavaScript inicializado');
-
     // Configurar partículas
     particlesJS('particles-js', {
       particles: {
@@ -319,7 +389,7 @@
     async function loadPokemonGrid() {
       try {
         pokemonGrid.innerHTML = '';
-        const limit = 1010; // Todas las generaciones hasta mayo 2025
+        const limit = totalPokemon; // Todas las generaciones hasta mayo 2025
         for (let id = 1; id <= limit; id++) {
           const detailResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
           const detailData = await detailResponse.json();
@@ -351,11 +421,35 @@
       renderer.setSize(canvas.clientWidth, canvas.clientHeight);
     });
 
-    // Inicializar
-    initThreeJS();
-    animate();
-    loadPokemonGrid();
-    fetchPokemon(25); // Pikachu inicial
+    // Transición al hacer clic en "enter"
+    document.getElementById('enter-btn').addEventListener('click', () => {
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+      initThreeJS();
+      animate();
+      loadPokemonGrid();
+      fetchPokemon(25); // Iniciar con Pikachu
+    });
+
+    // Inicializar pantalla de inicio
+    window.addEventListener('load', () => {
+      particlesJS('particles-js', {
+        particles: {
+          number: { value: 80, density: { enable: true, value_area: 800 } },
+          color: { value: '#00ffcc' },
+          shape: { type: 'circle' },
+          opacity: { value: 0.5, random: true },
+          size: { value: 3, random: true },
+          line_linked: { enable: true, distance: 150, color: '#00ffcc', opacity: 0.4, width: 1 },
+          move: { enable: true, speed: 2, direction: 'none', random: false }
+        },
+        interactivity: {
+          detect_on: 'canvas',
+          events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' } },
+          modes: { repulse: { distance: 100 }, push: { particles_nb: 4 } }
+        }
+      });
+    });
   </script>
 </body>
 </html>
