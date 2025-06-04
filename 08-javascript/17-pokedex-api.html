@@ -131,9 +131,7 @@
         /* ESTILOS ESPECÍFICOS PARA LA TERCERA INTERFAZ */
         #interface-3 {
             flex-direction: column;
-            /* --- CAMBIO CLAVE AQUÍ: Centrar contenido verticalmente --- */
-            justify-content: center; /* Cambiado de 'flex-start' a 'center' */
-            /* --- FIN CAMBIO CLAVE --- */
+            justify-content: center;
             align-items: center;
             padding: 2rem;
             box-sizing: border-box;
@@ -141,7 +139,7 @@
 
         .pokemon-display-container {
             display: flex;
-            flex-direction: column; /* Apila en pantallas pequeñas */
+            flex-direction: column;
             gap: 2rem;
             width: 100%;
             max-width: 800px;
@@ -151,11 +149,9 @@
 
         @media (min-width: 768px) {
             .pokemon-display-container {
-                flex-direction: row; /* Lado a lado en pantallas más grandes */
+                flex-direction: row;
                 justify-content: center;
-                /* --- CAMBIO CLAVE AQUÍ: Alinear elementos entre sí cuando están lado a lado --- */
-                align-items: center; /* Cambiado de 'flex-start' a 'center' */
-                /* --- FIN CAMBIO CLAVE --- */
+                align-items: center;
             }
         }
 
@@ -167,6 +163,9 @@
             border-radius: 1rem;
             filter: drop-shadow(0 0 10px #00ffcc);
             object-fit: contain;
+            /* --- NUEVA ANIMACIÓN DE GIRO --- */
+            animation: rotate360 8s linear infinite; /* 8 segundos para una vuelta completa, lineal (velocidad constante), infinito */
+            /* --- FIN NUEVA ANIMACIÓN --- */
         }
         #pokemon-details {
             padding: 1rem;
@@ -249,6 +248,13 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-20px); }
         }
+
+        /* --- DEFINICIÓN DE LA ANIMACIÓN DE GIRO --- */
+        @keyframes rotate360 {
+            from { transform: rotateY(0deg); } /* Inicia sin rotación */
+            to { transform: rotateY(360deg); } /* Gira 360 grados en el eje Y */
+        }
+        /* --- FIN DEFINICIÓN --- */
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -291,7 +297,9 @@
     </div>
 
     <script>
-        // Configurar partículas
+        // ... (Tu código JavaScript actual) ...
+        // Este código JS no necesita cambios para la animación, ya que es puramente CSS.
+
         particlesJS('particles-js', {
             particles: {
                 number: { value: 80, density: { enable: true, value_area: 800 } },
@@ -309,20 +317,26 @@
             }
         });
 
-        // Mostrar/Ocultar interfaces
         function showInterface(interfaceId) {
             document.querySelectorAll('.interface').forEach(i => i.classList.remove('active'));
             document.getElementById(interfaceId).classList.add('active');
         }
 
-        // Lista para almacenar los Pokémon cargados
         let pokemonList = [];
 
-        // Cargar cuadrícula de Pokémon por generación
+        function checkLocalImage(path) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(path);
+                img.onerror = () => resolve(null);
+                img.src = path;
+            });
+        }
+
         async function loadPokemonGrid(generationId = 1) {
             const pokemonGrid = document.getElementById('pokemon-grid');
             pokemonGrid.innerHTML = '';
-            pokemonList = []; // Limpiar la lista antes de cargar nuevos Pokémon
+            pokemonList = [];
 
             try {
                 const generationResponse = await fetch(`https://pokeapi.co/api/v2/generation/${generationId}`);
@@ -343,26 +357,27 @@
                         const detailResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
                         if (!detailResponse.ok) throw new Error(`Error al cargar Pokémon ID ${id}`);
                         const detailData = await detailResponse.json();
-                        const sprite = detailData.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+
+                        const localSpritePath = `images/pokedex1/${id}.png`; // O: `images/pokedex1/${detailData.name}.png`
+                        const sprite = await checkLocalImage(localSpritePath) || detailData.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+
                         const pokemonData = {
                             id: id,
                             name: detailData.name,
                             sprite: sprite
                         };
-                        pokemonList.push(pokemonData); // Guardar los datos en la lista
+                        pokemonList.push(pokemonData);
                     } catch (error) {
                         console.error(`Error al cargar Pokémon ID ${id} para la cuadrícula:`, error);
                     }
                 }
 
-                // Mostrar todos los Pokémon inicialmente
                 renderPokemonGrid(pokemonList);
             } catch (error) {
                 console.error(`Error al cargar la Generación ${generationId}:`, error);
             }
         }
 
-        // Renderizar la cuadrícula de Pokémon
         function renderPokemonGrid(pokemonArray) {
             const pokemonGrid = document.getElementById('pokemon-grid');
             pokemonGrid.innerHTML = '';
@@ -378,14 +393,12 @@
             });
         }
 
-        // Filtrar Pokémon por nombre
         function filterPokemon() {
             const searchTerm = document.getElementById('pokemon-search').value.toLowerCase();
             const filteredPokemon = pokemonList.filter(pokemon => pokemon.name.toLowerCase().includes(searchTerm));
             renderPokemonGrid(filteredPokemon);
         }
 
-        // Obtener datos del Pokémon
         async function fetchPokemon(id) {
             try {
                 const card = document.getElementById('pokemon-details');
@@ -401,13 +414,26 @@
                     dark: '🌑', steel: '⚙️', fairy: '✨'
                 };
 
-                let spriteUrl = data.sprites.other['official-artwork'].front_default || data.sprites.front_default;
-                if (!spriteUrl) {
-                    console.warn(`No se encontró sprite en PokeAPI para Pokémon ID ${id}, usando URL de respaldo`);
-                    spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+                const imageNameBase = data.name.toLowerCase(); // Ajusta esto si usas ID para el nombre del archivo
+
+                let finalImageUrl = null;
+
+                const localGifPath = `images/pokedex1/${imageNameBase}.gif`; // O: `images/pokedex1/${id}.gif`
+                finalImageUrl = await checkLocalImage(localGifPath);
+
+                if (!finalImageUrl) {
+                    const localPngPath = `images/pokedex1/${imageNameBase}.png`; // O: `images/pokedex1/${id}.png`
+                    finalImageUrl = await checkLocalImage(localPngPath);
                 }
 
-                document.getElementById('pokemon-image').src = spriteUrl;
+                if (!finalImageUrl) {
+                    finalImageUrl = data.sprites.other['official-artwork'].front_default || data.sprites.front_default;
+                    if (!finalImageUrl) {
+                        console.warn(`No se encontró sprite en PokeAPI para Pokémon ID ${id}, usando URL de respaldo`);
+                        finalImageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+                    }
+                }
+                document.getElementById('pokemon-image').src = finalImageUrl;
 
                 card.innerHTML = `
                     <h2 class="text-2xl font-bold capitalize text-cyan-300 mb-2">${data.name}</h2>
@@ -437,10 +463,9 @@
             }
         }
 
-        // Event listeners
         document.getElementById('enter-btn').addEventListener('click', () => {
             showInterface('interface-2');
-            loadPokemonGrid(); // Cargar Generación 1 por defecto
+            loadPokemonGrid();
         });
 
         document.getElementById('back-btn-2').addEventListener('click', () => {
@@ -455,10 +480,9 @@
         document.getElementById('generation-selector').addEventListener('change', (event) => {
             const generationId = event.target.value;
             loadPokemonGrid(generationId);
-            document.getElementById('pokemon-search').value = ''; // Limpiar el buscador al cambiar de generación
+            document.getElementById('pokemon-search').value = '';
         });
 
-        // Event listener para el buscador
         document.getElementById('pokemon-search').addEventListener('input', filterPokemon);
     </script>
 </body>
