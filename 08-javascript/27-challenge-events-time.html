@@ -1,944 +1,1034 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>27- challenge-events-time</title>
-    <link rel="stylesheet" href="css/master.css">
-    <style>
-       /* body { ****
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: #000;
-            overflow: hidden;
-            font-family: 'Arial', sans-serif;
-        } */
-
-        /*** Pague # 1: Home Principal ***/ 
-        section > div.home-principal {
-            background: url(images/videoGame/body_home.svg) no-repeat center;
-            /* border: red solid 2px; */
-            width: 355px;
-            height: 614px;
-            margin: 1rem auto;
-            position: relative;    /*  Necesario para que el botón se posicione relativo a este contenedor  */
-            
-            .button-home {
-                background: url(images/videoGame/button_play.svg) no-repeat center;
-                /* border: red solid 2px; */
-                height: 43px;
-                width: 205px;
-                margin: 1rem auto;
-                /* Truco de Centrado: */
-                position: absolute;
-                bottom: 1rem;                       /* Alinea el botón a la parte inferior */
-                left: 50%;
-                transform: translateX(-50%);        /*  Centra el botón horizontalmente */
-                transition: transform 0.3s;         /*   Añade transiciones suaves | Funciona con el hover */
-            }
-                .button-home:hover {
-                    transform: translateX(-50%) scale(1.1);     /*  Aumenta el tamaño del botón al hacer hover */
-                    cursor: pointer;                            /*  Cambia el cursor para indicar que es clickeable */
-                }   
-         }   
-
-        /*** Page # 2: Page Play ***/
-        #game-container {
-            background: url(images/videoGame/body_play.svg) no-repeat center;
-            position: relative;
-            width: 355px;
-            height: 614px;
-            margin: 1rem auto;
-            /* background: #222; */
-            overflow: hidden;
-            border: 4px solid #555;
-            box-shadow: 0 0 20px #0ff;
-            background-repeat: repeat-y;
-            animation: gameContainerMove 1s linear infinite;
-        }
-
-        #road {
-            position: absolute;
-            width: 189px;          /* Dimension de carretera */
-            height: 2000px;
-            left: 83px; /* (355 - 189) / 2 = 83 */
-            background: url(images/videoGame/carretera.svg) no-repeat center;
-            background-repeat: repeat-y;
-            animation: roadMove 1s linear infinite;
-        }
-
-        @keyframes gameContainerMove {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 614px; }
-        }
-
-        @keyframes roadMove {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 614px; }
-        }
-
-        #player-car {
-            position: absolute;
-            width: 23px;
-            height: 33px;
-            bottom: 100px;
-            left: 162.5px; /* (355 - 30) / 2 = 162.5 */
-            z-index: 10;
-            background: url(images/videoGame/player-car.svg) no-repeat center;
-        }
-
-        /* Carro enemigo amarillo*/
-        .enemy-car-1 {
-            position: absolute;
-            width: 22px;
-            height: 30px;
-            z-index: 5;
-            background: url(images/videoGame/enemy-car1-yellow.svg) no-repeat center;
-        }
-
-        /* Carro enemigo azul */
-        .enemy-car-2 {
-            position: absolute;
-            width: 24px;
-            height: 35px;
-            z-index: 5;
-            background: url(images/videoGame/enemy-car2-blue.svg) no-repeat center;
-        }
-
-        /* Carro enemigo tractomula*/
-        .enemy-car-3 {
-            position: absolute;
-            width: 34px;
-            height: 75px;
-            z-index: 5;
-            background: url(images/videoGame/enemy-car3-tractomula.svg) no-repeat center;
-        }
-
-        /* Carro enemigo rojo */
-        .enemy-car-4 {
-            position: absolute;
-            width: 22px;
-            height: 30px;
-            z-index: 5;
-            background: url(images/videoGame/enemy-car4-red.svg) no-repeat center;
-        }
-
-        /* Carro fuel Gasolina */
-        .fuel {
-            position: absolute;
-            width: 24px;
-            height: 32px;
-            z-index: 5;
-            background: url(images/videoGame/fuel-car.svg);
-            /* background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 36"><rect x="3.67" y="0" width="14.67" height="28.8" fill="%23ff0" stroke="%23000" stroke-width="0.73"/><rect x="7.33" y="28.8" width="7.33" height="7.2" fill="%23800"/></svg>'); */
-        }
-
-        #hud {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-size: 16px;
-            z-index: 20;
-            text-shadow: 2px 2px 2px #000;
-        }
-
-        #fuel-gauge {
-            position: absolute;
-            top: 35px;
-            left: 10px;
-            width: 80px;
-            height: 8px;
-            background: #333;
-            border: 1px solid #fff;
-            z-index: 20;
-        }
-
-        #fuel-level {
-            height: 100%;
-            width: 100%;
-            background: #ff0;
-            transition: width 0.3s;
-        }
-
-        /**** Game over ****/
-        #game-over {
-            border: red solid 1px;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            z-index: 30;
-        }
-
-        .game-over-card {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 240px;
-            padding: 30px;
-            background: linear-gradient(145deg, #1a1a2e8a, #16213ea1);
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
-                        0 0 0 2px rgba(255, 215, 0, 0.3),
-                        0 0 30px rgba(255, 69, 0, 0.6);
-            text-align: center;
-            color: white;
-            font-family: 'Arial', sans-serif;
-            z-index: 100;
-            animation: fadeIn 0.5s ease-out, pulse 2s infinite alternate;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .game-over-card h1 {
-            color: #ff5555;
-            font-size: 2.1rem;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            letter-spacing: 2px;
-        }
-
-        .final-score {
-            font-size: 1.3rem;
-            margin-bottom: 25px;
-            color: #f8f8f8;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        #final-score {
-            color: #4CAF50;
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
-
-        #restart-btn {
-            background: linear-gradient(to right, #ff416c, #ff4b2b);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        #restart-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.6);
-            background: linear-gradient(to right, #ff4b2b, #ff416c);
-        }
-
-        #restart-btn:active {
-            transform: translateY(1px);
-        }
-
-        /* Animaciones */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -60%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
-        }
-
-        @keyframes pulse {
-            from { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
-                            0 0 0 2px rgba(255, 215, 0, 0.3),
-                            0 0 30px rgba(255, 69, 0, 0.6); }
-            to { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6),
-                        0 0 0 3px rgba(255, 215, 0, 0.4),
-                        0 0 40px rgba(255, 69, 0, 0.8); }
-        }
-
-        /* #game-over h1 {
-            color: #f00;
-            font-size: 32px;
-            margin-bottom: 15px;
-        }
-
-        .final-score {
-            color: green;
-        } */
-
-        /**** Start Screen Pantalla de Inicio ****/
-        #start-screen {
-            border: red solid 1px;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            text-align: center;
-            z-index: 30;
-        }
-
-        .start-screen-card {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 240px;
-            padding: 40px 30px;
-            background: rgba(10, 10, 20, 0.9);
-            border-radius: 20px;
-            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.5),
-                        0 0 30px rgba(255, 100, 0, 0.7),
-                        inset 0 0 10px rgba(255, 255, 255, 0.1);
-            text-align: center;
-            color: white;
-            font-family: 'Arial', sans-serif;
-            z-index: 100;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            animation: fadeIn 0.8s ease-out, neonGlow 3s infinite alternate;
-        }
-
-        .start-screen-card h1 {
-            color: #ff5555;
-            font-size: 3rem;
-            margin-bottom: 25px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7),
-                        0 0 20px rgba(255, 50, 0, 0.5);
-            letter-spacing: 3px;
-            font-weight: 900;
-            text-transform: uppercase;
-            margin-top: 0;
-        }
-
-        .start-screen-card p {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            color: #e0e0e0;
-            line-height: 1.5;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-        }
-
-        .start-screen-card p:last-of-type {
-            margin-bottom: 30px;
-        }
-
-        #start-btn {
-            background: linear-gradient(135deg, #b02900, #dda938);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0, 176, 155, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: bold;
-            position: relative;
-            overflow: hidden;
-        }
-
-        #start-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 176, 155, 0.6);
-            background: linear-gradient(135deg, #96c93d, #00b09b);
-        }
-
-        #start-btn:active {
-            transform: translateY(1px);
-        }
-
-        #start-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: rotate(45deg);
-            transition: all 0.5s ease;
-            pointer-events: none;
-        }
-
-        #start-btn:hover::after {
-            left: 100%;
-        }
-
-        /* Animaciones */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -60%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
-        }
-
-        @keyframes neonGlow {
-            from { 
-                box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.5),
-                            0 0 30px rgba(255, 100, 0, 0.7),
-                            inset 0 0 10px rgba(255, 255, 255, 0.1);
-            }
-            to { 
-                box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.7),
-                            0 0 40px rgba(255, 100, 0, 0.9),
-                            inset 0 0 15px rgba(255, 255, 255, 0.2);
-            }
-        }
-
-        /* #start-screen h1 {
-            color: #f00;
-            font-size: 32px;
-            margin-bottom: 15px;
-        }
-
-        button {
-            padding: 8px 16px;
-            font-size: 16px;
-            background: #d00;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 15px;
-        } */
-
-        .explosion {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="%23f80"/><circle cx="20" cy="20" r="12" fill="%23ff0"/><circle cx="20" cy="20" r="8" fill="%23f00"/></svg>');
-            background-size: contain;
-            z-index: 15;
-            animation: explode 0.5s forwards;
-        }
-
-        @keyframes explode {
-            0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-
-         /* Superman flying animation */
-         .superman {
-            position: absolute;
-            width: 30px;
-            height: 99px;
-            background: url(images/videoGame/superman.svg) no-repeat center;
-            background-size: contain;
-            background-repeat: no-repeat;
-            z-index: 25;
-            left: 20px;
-            animation: supermanFly 4s linear infinite;
-            display: none;
-        }
-
-        @keyframes supermanFly {
-            0% { top: 614px ; }        /* Comienza abajo */
-            100% { top: -30px; }       /* Termina arriba */
-        }
-
-        /**** Target: Paginaciones  ****/
-        section .page-target {
-             display: none;                 /*  Oculta todas las secciones 17-pokedex-api.html#page1-home-principal */
-        }  
-
-        section .page-target:target {
-            display: block;               /*  Muestra la sección cuando su id coincide con el hash en la URL */                             
-        } 
-
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Seiya: Meteoros de Pegaso — Shooter Horizontal</title>
+<style>
+  :root{
+    --bg1:#030216; --bg2:#07102b; --accent:#ffd36b;
+    --hud:#e8f7ff;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--hud)}
+  .wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 12px;}
+  #gameArea{position:relative; width:960px; max-width:96vw;}
+  canvas{display:block;width:100%;height:auto;border-radius:12px;box-shadow:0 14px 40px rgba(3,8,20,0.75);}
+  .hudBox{position:absolute; left:16px; top:12px; color:var(--hud); text-shadow:0 6px 18px rgba(0,0,0,0.6);}
+  .hudTitle{font-weight:800; font-size:18px;}
+  .hudStat{margin-top:6px;font-weight:600; font-size:14px;}
+  .controls{position:absolute; right:14px; top:12px; background:rgba(255,255,255,0.02); padding:10px 12px; border-radius:10px; font-size:13px; box-shadow:0 8px 30px rgba(0,0,0,0.45);}
+  .topbar{display:flex;gap:12px;align-items:center; flex-wrap: wrap;} /* Added flex-wrap */
+  label.button{background:linear-gradient(180deg,#2a6bff,#1b4fe6);padding:8px 12px;border-radius:10px;color:white;font-weight:700;cursor:pointer;display:inline-block}
+  input[type="text"]{
+    background:rgba(255,255,255,0.1);
+    border:1px solid rgba(255,255,255,0.2);
+    padding:8px 12px;
+    border-radius:10px;
+    color:var(--hud);
+    font-size:13px;
+    width: 200px; /* Fixed width for text input */
+    box-sizing: border-box;
+  }
+  .muted{opacity:0.82;font-size:13px}
+  .centerMsg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));padding:14px 18px;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.5);text-align:center}
+  footer{color:rgba(255,255,255,0.14);font-size:12px;margin-top:6px}
+  /* Responsive adjustments for topbar buttons */
+  @media (max-width: 980px) { /* Adjusted breakpoint for more space */
+    .topbar > div { /* Target direct children divs of topbar */
+      flex-basis: calc(50% - 10px); /* Two columns layout */
+      margin-bottom: 10px; /* Space between rows */
+      max-width: unset; /* Override fixed width for responsiveness */
+      width: auto;
+    }
+    .topbar > div:last-child { /* Adjust last div if needed */
+      flex-basis: 100%; /* For controls text */
+      text-align: center;
+    }
+    .controls{display:none} /* Hide for small screens as before */
+  }
+  @media (max-width: 600px) {
+    .topbar > div {
+      flex-basis: 100%; /* Single column layout for very small screens */
+    }
+  }
+</style>
 </head>
 <body>
-    <nav class="controls">
-        <a href="index.html"> <!-- ../para devolverme  -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="#ffffff" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
-        </a>
-    </nav>
-    <main>
-        <header>
-            <h1>27- Challenge events time</h1>
-            <h2>Este challengue es de video juego</h2>
-        </header>
-        <section>
-            <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="100%" height="450" src="https://embed.figma.com/design/Zorg9fnFdR50UM5MirLa7w/videoGame?node-id=0-1&embed-host=share" allowfullscreen></iframe>
-            <!-- Page # 1 --> 
-            <div class="home-principal page-target" id="page1-home-principal">
-                <a href="#game-container" class="button-home"></a>
-            </div> 
-            <!-- Page # 2 --> 
-            <div id="game-container" class="page-target">
-                <div id="road"></div>
-                <div id="player-car"></div>
-                <div id="hud">SCORE: <span id="score">0</span></div>
-                <div id="fuel-gauge"><div id="fuel-level"></div></div>
-                <div class="superman" id="superman"></div>
-                
-                <div id="game-over">
-                    <div class="game-over-card">
-                        <h1>GAME OVER</h1>
-                        <p class="final-score">FINAL SCORE: <span id="final-score">0</span></p>
-                        <button id="restart-btn">PLAY AGAIN</button>
-                    </div>
-                </div>
-                
-                <div id="start-screen">
-                    <div class="start-screen-card">
-                        <h1>ROAD FIGHTER</h1>
-                        <p>Use las flechas para conducir.</p>
-                        <p>Evita las colisiones con coches y los bordes de la carretera !</p>
-                        <button id="start-btn">START GAME</button>
-                    </div>
-                </div>
-            </div>
-        
-            <audio id="engine-sound" loop src="https://assets.mixkit.co/sfx/preview/mixkit-car-engine-revving-1560.mp3"></audio>
-            <audio id="crash-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-car-crash-with-explosion-1617.mp3"></audio>
-            <audio id="fuel-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-complete-or-approved-205.mp3"></audio>
+<div class="wrap">
+  <!-- This topbar now contains only the game controls, image upload inputs are moved to a hidden div -->
+  <div class="topbar" style="width:960px;max-width:96vw;justify-content:flex-end;">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="muted">Mover: WASD / Flechas · Disparar: Z / Espacio · Especial: X · Pausa: P</div>
+    </div>
+  </div>
 
-        </section>
-    </main>  
-    <script>
-        // Game elements
-        const gameContainer = document.getElementById('game-container');
-        const playerCar = document.getElementById('player-car');
-        const scoreDisplay = document.getElementById('score');
-        const fuelLevel = document.getElementById('fuel-level');
-        const gameOverScreen = document.getElementById('game-over');
-        const finalScoreDisplay = document.getElementById('final-score');
-        const restartBtn = document.getElementById('restart-btn');
-        const startScreen = document.getElementById('start-screen');
-        const startBtn = document.getElementById('start-btn');
-        const supermanElement = document.getElementById('superman');   // Superman
-        
-        // Sounds
-        const engineSound = document.getElementById('engine-sound');
-        const crashSound = document.getElementById('crash-sound');
-        const fuelSound = document.getElementById('fuel-sound');
-        
-        // Game variables
-        let score = 0;
-        let fuel = 100;
-        let gameSpeed = 2;
-        let gameRunning = false;
-        let animationId;
-        let enemies = [];
-        let fuels = [];
-        let explosions = [];
-        let supermanShown = false;
-        
-        // Player car properties
-        const player = {
-            x: 162.5,
-            y: 464,
-            width: 30,
-            height: 50,
-            speed: 4
-        };
-        
-        // Controls
-        const keys = {
-            ArrowUp: false,
-            ArrowDown: false,
-            ArrowLeft: false,
-            ArrowRight: false
-        };
-        
-        // Event listeners
-        document.addEventListener('keydown', (e) => {
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = true;
-            }
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = false;
-            }
-        });
-        
-        startBtn.addEventListener('click', startGame);
-        restartBtn.addEventListener('click', startGame);
-        
-        // Start game
-        function startGame() {
-            // Reset game state
-            score = 0;
-            fuel = 100;
-            gameSpeed = 2;
-            enemies = [];
-            fuels = [];
-            supermanShown = false;
-            
-            // Reset displays
-            scoreDisplay.textContent = '0';
-            fuelLevel.style.width = '100%';
+  <!-- Hidden div for image upload controls -->
+  <div id="imageUploadControls" style="display:none;">
+    <div style="display:flex; flex-wrap: wrap; gap: 10px; padding: 10px; background: #1a2a4a; border-radius: 12px; margin-top: 10px;">
+      <div>
+        <label class="button" id="uploadPlayerLabel">Cargar sprite (Seiya)</label>
+        <input id="playerFileInput" type="file" accept="image/*" />
+        <span class="muted" style="margin-left:10px">Saltar: usa sprite por defecto</span>
+      </div>
 
-            // Hide superman
-            supermanElement.style.display = 'none';
-            
-            // Reset player position
-            player.x = 162.5;
-            player.y = 464;
-            updatePlayerPosition();
-            
-            // Clear existing elements
-            document.querySelectorAll('[class^="enemy-car-"], .fuel, .explosion').forEach(el => el.remove());
-            
-            // Hide screens
-            gameOverScreen.style.display = 'none';
-            startScreen.style.display = 'none';
-            
-            // Start engine sound
-            engineSound.currentTime = 0;
-            engineSound.play();
-            
-            // Start game loop
-            gameRunning = true;
-            gameLoop();
-        }
-        
-        // Main game loop
-        function gameLoop() {
-            if (!gameRunning) return;
-            
-            // Move player
-            movePlayer();
-            
-            // Check if player hits road edges
-            checkRoadEdges();
-            
-            // Spawn enemies and fuel
-            if (Math.random() < 0.02) {
-                spawnEnemy();
-            }
-            
-            if (Math.random() < 0.005) {
-                spawnFuel();
-            }
-            
-            // Move game elements
-            moveEnemies();
-            moveFuel();
-            
-            // Check collisions
-            checkCollisions();
-            
-            // Update score and fuel
-            updateGameState();
+      <div style="display:flex; flex-direction: column; gap: 5px;">
+        <label class="button" id="uploadEnemyFilesLabel">Cargar sprites (Enemigos)</label>
+        <input id="enemyFilesInput" type="file" accept="image/*" multiple />
+        <span class="muted" style="margin-top:-5px">Múltiples imágenes, al azar.</span>
+        <input type="text" id="enemyUrlInput" placeholder="URL de sprite de enemigo" />
+        <label class="button" id="loadEnemyUrlLabel">Cargar URL (añade a la lista)</label>
+      </div>
 
-            // Check for superman appearance
-            checkSupermanAppearance();
-            
-            // Continue game loop
-            animationId = requestAnimationFrame(gameLoop);
-        }
+      <div style="display:flex; flex-direction: column; gap: 5px;">
+        <label class="button" id="uploadBossFileLabel">Cargar sprite (Jefe)</label>
+        <input id="bossFileInput" type="file" accept="image/*" />
+        <span class="muted" style="margin-top:-5px">Imagen para el Jefe Final.</span>
+        <input type="text" id="bossUrlInput" placeholder="URL de sprite de Jefe" />
+        <label class="button" id="loadBossUrlLabel">Cargar URL (Jefe)</label>
+      </div>
+    </div>
+  </div>
 
-        // Check if we should show superman
-        function checkSupermanAppearance() {
-            if (score >= 500 && !supermanShown) {
-                showSuperman();
-                supermanShown = true;   
-            }
+  <div id="gameArea">
+    <canvas id="c" width="960" height="540"></canvas>
+
+    <div class="hudBox" id="hud">
+      <div class="hudTitle">Seiya: Meteoros de Pegaso</div>
+      <div class="hudStat" id="levelText">Nivel: 0</div>
+      <div class="hudStat" id="scoreText">Puntaje: 0</div>
+      <div class="hudStat" id="lifeText">Vidas: 7</div>
+      <div class="hudStat" id="cosmoText">Cosmo: 0%</div>
+    </div>
+
+    <div class="controls">
+      <div style="font-weight:700;margin-bottom:6px">Opciones</div>
+      <div style="font-size:13px;margin-bottom:6px">Velocidad enemigo: <input id="diff" type="range" min="0.7" max="1.6" step="0.05" value="1"> </div>
+      <div style="font-size:13px">Disparos automáticos: <input id="autoShot" type="checkbox" checked></div>
+    </div>
+
+    <div class="centerMsg" id="centerMsg" style="display:none">
+      <div style="font-size:20px;font-weight:800">¡Pegaso Meteoro!</div>
+      <div style="margin-top:8px">Presiona Z o Espacio para disparar, X para ataque especial. Carga tu sprite para usar tu Seiya.</div>
+    </div>
+  </div>
+
+  <footer>Prototipo educativo — usa tu sprite para reemplazar la nave</footer>
+</div>
+
+<!-- 
+  Las etiquetas de audio han sido eliminadas ya que la funcionalidad de audio fue desactivada.
+-->
+
+
+<script>
+// Canvas setup
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// Audio elements (variables eliminadas)
+
+
+// Controls & UI elements references (These are now effectively unused as UI is hidden)
+const playerFileInput = document.getElementById('playerFileInput');
+const uploadPlayerLabel = document.getElementById('uploadPlayerLabel');
+const enemyFilesInput = document.getElementById('enemyFilesInput');
+const uploadEnemyFilesLabel = document.getElementById('uploadEnemyFilesLabel');
+const enemyUrlInput = document.getElementById('enemyUrlInput');
+const loadEnemyUrlLabel = document.getElementById('loadEnemyUrlLabel');
+const bossFileInput = document.getElementById('bossFileInput');
+const uploadBossFileLabel = document.getElementById('uploadBossFileLabel');
+const bossUrlInput = document.getElementById('bossUrlInput');
+const loadBossUrlLabel = document = document.getElementById('loadBossUrlLabel');
+
+const centerMsg = document.getElementById('centerMsg');
+const scoreText = document.getElementById('scoreText');
+const lifeText = document.getElementById('lifeText');
+const cosmoText = document.getElementById('cosmoText');
+const levelText = document.getElementById('levelText');
+const diffRange = document.getElementById('diff');
+const autoShot = document.getElementById('autoShot');
+
+// Event listeners for file and URL inputs (kept in code, but UI elements are hidden)
+// If you want to use the UI again, you would need to change "display:none" in the HTML for 'imageUploadControls'.
+uploadPlayerLabel.addEventListener('click', ()=> playerFileInput.click());
+playerFileInput.addEventListener('change', handlePlayerFile);
+
+uploadEnemyFilesLabel.addEventListener('click', ()=> enemyFilesInput.click());
+enemyFilesInput.addEventListener('change', handleEnemyFiles);
+
+loadEnemyUrlLabel.addEventListener('click', handleEnemyUrl);
+
+uploadBossFileLabel.addEventListener('click', ()=> bossFileInput.click());
+bossFileInput.addEventListener('change', handleBossFile);
+
+loadBossUrlLabel.addEventListener('click', handleBossUrl);
+
+
+// Default sprite URLs for player, enemies, and boss
+// ***************************************************************
+// MODIFICA ESTAS URLS PARA PERSONALIZAR LOS SPRITES
+// ***************************************************************
+
+// URL para Seiya (el jugador)
+const DEFAULT_PLAYER_SPRITE = 'https://i.pinimg.com/originals/0a/2b/80/0a2b806580a1f8e13bf75e96aded066e.gif';
+
+// Array de URLs para enemigos normales. He cambiado las URLs a placeholders más fiables.
+// Puedes cambiarlas de nuevo si tienes URLs específicas que funcionen mejor para ti.
+// EL ORDEN IMPORTA para los tamaños: [0] = PEQUEÑO, [1] = MEDIANO, [2] = GRANDE
+const DEFAULT_ENEMY_SPRITE_URLS = [
+  'https://i.pinimg.com/1200x/98/30/a5/9830a58101e3db8c1abcdb95384575d3.jpg', // Enemigo PEQUEÑO (Placeholder 1)
+  'https://i.pinimg.com/1200x/3a/93/b1/3a93b192a4de9fcbb26aba845cfd0ff4.jpg', // Enemigo MEDIANO (Placeholder 2)
+  'https://i.pinimg.com/1200x/ca/a1/69/caa16953167294d515463531059dfeff.jpg',  // Enemigo GRANDE (Placeholder 3)
+];
+
+// URL para el Jefe Final
+const DEFAULT_BOSS_SPRITE = 'https://i.pinimg.com/1200x/2c/b1/e8/2cb1e8306a9a7f350b358a35a141d55f.jpg';
+
+// URL para el escenario/fondo. Asegúrate de que esta imagen sea "tileable" (que pueda repetirse sin bordes)
+// Puedes cambiar esta URL por la de tu propia imagen de fondo.
+const DEFAULT_BACKGROUND_SPRITE = 'https://i.pinimg.com/1200x/c6/2f/e7/c62fe76b8edb10b7f4159f00ffe9849c.jpg';
+
+// ***************************************************************
+// FIN DE LA SECCIÓN DE MODIFICACIÓN DE URLS
+// ***************************************************************
+
+
+// Define sizes for enemies based on their index in the sprite pool
+const ENEMY_SIZES = [
+    { w: 56, h: 56 }, // Small enemy size
+    { w: 64, h: 64 }, // Medium enemy size
+    { w: 80, h: 80 }  // Large enemy size
+];
+const BOSS_SIZE = { w: 120, h: 120 }; // Fixed size for the boss
+
+// Define base HP values for different enemy sizes (used for initial HP calculation)
+const ENEMY_INITIAL_BASE_HPS = [2, 4, 6]; // Base HP for small, medium, large enemies
+// Define maximum HP values for health bar rendering for different enemy sizes
+// These values represent the max HP an enemy of that type can reach (base + max random + level scaling)
+const ENEMY_RENDER_MAX_HPS_BASE = [4, 6, 8]; // (2+2, 4+2, 6+2) accounts for Math.random()*2 range (0-2)
+
+// Game assets (background, particles, explosions)
+const ASSETS_TO_LOAD = {
+  bg: DEFAULT_BACKGROUND_SPRITE,
+  star: 'https://i.ibb.co/QmL8f2y/star-field.png',
+  explosion: 'https://i.ibb.co/z5qVWMJ/explosion.png'
+};
+
+const imgs = {}; // Stores Image objects for background, stars, explosions
+let loadedAssetsCount = 0;
+const totalAssetsToLoad = Object.keys(ASSETS_TO_LOAD).length;
+
+// Player sprite management
+let playerImg = new Image();
+playerImg.src = DEFAULT_PLAYER_SPRITE;
+
+// Enemy sprites management: array for normal enemies, populated by files/URLs
+let enemySpritePool = [];
+// Load default enemy sprites into the pool initially
+DEFAULT_ENEMY_SPRITE_URLS.forEach(url => {
+  const img = new Image();
+  img.src = url;
+  img.onerror = () => { console.warn(`Error loading default enemy sprite: ${url}`); }; // Log errors for defaults
+  enemySpritePool.push(img);
+});
+
+// Boss sprite management: single image for the final boss
+let bossImg = new Image();
+bossImg.src = DEFAULT_BOSS_SPRITE;
+bossImg.onerror = () => { console.warn(`Error loading default boss sprite: ${DEFAULT_BOSS_SPRITE}`); }; // Log errors for default boss
+
+// Load initial static assets (background, star, explosion)
+for(const k in ASSETS_TO_LOAD){
+  imgs[k] = new Image();
+  imgs[k].src = ASSETS_TO_LOAD[k];
+  imgs[k].onload = ()=> {
+    loadedAssetsCount++;
+    if(loadedAssetsCount === totalAssetsToLoad) {
+      showTipImmediate(); // Show initial tip once core assets are loaded
+    }
+  };
+  imgs[k].onerror = ()=> {
+    loadedAssetsCount++;
+    if(loadedAssetsCount === totalAssetsToLoad) showTipImmediate();
+    console.warn(`Error al cargar la imagen de asset: ${ASSETS_TO_LOAD[k]}`);
+  };
+}
+
+// Handler for player sprite file input
+function handlePlayerFile(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    playerImg = new Image();
+    playerImg.src = ev.target.result;
+    playerImg.onload = ()=> {
+      showTip('Sprite de Seiya cargado — ¡vamos!');
+    };
+    playerImg.onerror = () => {
+      console.warn('Error al cargar el sprite personalizado de Seiya');
+      showTip('Error al cargar el sprite de Seiya');
+    };
+  };
+  reader.readAsDataURL(f);
+}
+
+// Handler for multiple enemy sprite file input
+function handleEnemyFiles(e){
+  const files = e.target.files;
+  if(!files.length) return;
+
+  enemySpritePool = []; // Clear existing sprites (including defaults)
+  let loadedCount = 0;
+  const totalFiles = files.length;
+
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.src = ev.target.result;
+      img.onload = () => {
+        enemySpritePool.push(img);
+        loadedCount++;
+        if (loadedCount === totalFiles) {
+          showTip(`Cargados ${totalFiles} sprites de enemigos.`);
         }
-        
-        // Show superman flying
-        function showSuperman() {
-            supermanElement.style.display = 'block';
-            supermanElement.style.left = '20px';
-            supermanElement.style.top = '614px';    // El superman empieza desde abajo
-            
-            // Reset superman after animation completes
-            setTimeout(() => {
-                supermanElement.style.display = 'none';
-            }, 4000);
+      };
+      img.onerror = () => {
+        loadedCount++;
+        if (loadedCount === totalFiles) showTip(`Error al cargar algunos sprites de enemigos.`);
+        console.warn(`Error al cargar el sprite de enemigo: ${f.name}`);
+      };
+    };
+    reader.readAsDataURL(f);
+  }
+}
+
+// Handler for single enemy sprite URL input
+function handleEnemyUrl(){
+  const url = enemyUrlInput.value.trim();
+  if(!url) {
+    showTip('Por favor, ingresa una URL válida para el enemigo.');
+    return;
+  }
+  const img = new Image();
+  img.src = url;
+  img.onload = () => {
+    // Add the new image to the pool. If the pool was empty or only had defaults, this effectively adds a custom one.
+    enemySpritePool.push(img);
+    showTip('Sprite de enemigo desde URL cargado (añadido a la lista).');
+  };
+  img.onerror = () => {
+    console.warn('Error al cargar el sprite de enemigo desde URL:', url);
+    showTip('Error al cargar el sprite de enemigo desde URL.');
+  };
+}
+
+// Handler for boss sprite file input
+function handleBossFile(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    bossImg = new Image();
+    bossImg.src = ev.target.result;
+    bossImg.onload = () => {
+      showTip('Sprite de Jefe Final cargado.');
+    };
+    bossImg.onerror = () => {
+      console.warn('Error al cargar el sprite de Jefe Final desde archivo');
+      showTip('Error al cargar el sprite de Jefe Final');
+    };
+  };
+  reader.readAsDataURL(f);
+}
+
+// Handler for boss sprite URL input
+function handleBossUrl(){
+  const url = bossUrlInput.value.trim();
+  if(!url) {
+    showTip('Por favor, ingresa una URL válida para el Jefe Final.');
+    return;
+  }
+  bossImg = new Image();
+  bossImg.src = url;
+  bossImg.onload = () => {
+    showTip('Sprite de Jefe Final desde URL cargado.');
+  };
+  img.onerror = () => {
+    console.warn('Error al cargar el sprite de Jefe Final desde URL:', url);
+    showTip('Error al cargar el sprite de Jefe Final desde URL.');
+  };
+}
+
+// show center tip message
+function showTip(txt){
+  centerMsg.style.display = 'block';
+  if(txt) centerMsg.innerHTML = `<div style="font-size:20px;font-weight:800">${txt}</div>`;
+  setTimeout(()=> centerMsg.style.display = 'none', 2200);
+}
+function showTipImmediate(){
+  centerMsg.style.display = 'block';
+  setTimeout(()=> centerMsg.style.display = 'none', 2000);
+}
+
+// Game stats and initial state
+let keys = {};
+window.addEventListener('keydown', e=> { keys[e.key.toLowerCase()] = true; if([' ','z','p','x'].includes(e.key.toLowerCase())) e.preventDefault(); });
+window.addEventListener('keyup', e=> { keys[e.key.toLowerCase()] = false; });
+
+let score = 0, lives = 7, level = 0, paused = false, gameOver = false, gameWon = false;
+let player = { x: 90, y: H*0.5, w: 72, h: 72, speed: 420, reload:0.12, reloadT:0, alive:true, hits:0, cosmo:0 };
+let meteors = [];
+let enemies = [];
+let enemyBullets = [];
+let particles = [];
+let explosions = [];
+let powerUps = [];
+
+let lastTime = 0, spawnT = 0, bgOff = 0;
+
+// Helper functions for math
+const clamp = (v,a,b)=> Math.max(a,Math.min(b,v));
+const rand = (a,b)=> Math.random()*(b-a)+a;
+
+// Spawns a regular enemy
+function spawnEnemy(){
+  if(level === 4) return; // No regular enemies in boss level
+  const y = 40 + Math.random()*(H - 80);
+  const speed = (110 + Math.random()*140) * parseFloat(diffRange.value) * (1 + level * 0.2);
+
+  let enemyImageToUse;
+  let enemySize = ENEMY_SIZES[0];
+  let enemyTypeIndex = 0; // Default to small enemy type
+
+  if (enemySpritePool.length > 0) {
+    enemyTypeIndex = Math.floor(Math.random() * enemySpritePool.length) % ENEMY_SIZES.length; // Ensure index is within 0, 1, 2
+    enemyImageToUse = enemySpritePool[enemyTypeIndex]; // Use enemyTypeIndex directly for sprite pool
+    enemySize = ENEMY_SIZES[enemyTypeIndex]; // Use enemyTypeIndex for size
+  } else {
+    // Fallback if the pool is empty (shouldn't happen with defaults, but for safety)
+    enemyImageToUse = new Image();
+    enemyImageToUse.src = 'https://placehold.co/48x48/FF0000/FFFFFF?text=E';
+  }
+
+  const baseHpForThisEnemyType = ENEMY_INITIAL_BASE_HPS[enemyTypeIndex];
+  // Calculate actual HP, adding some randomness for variety
+  const hp = Math.ceil(baseHpForThisEnemyType + Math.random()*2 + level * 0.5);
+  const shootTimer = rand(0.6, 2.4) / (1 + level * 0.15);
+
+  enemies.push({
+    x: W + 80,
+    y,
+    w: enemySize.w,
+    h: enemySize.h,
+    speed,
+    hp,
+    t:0,
+    shootTimer,
+    img: enemyImageToUse,
+    // Store the maximum HP for rendering, specific to this enemy type and current level
+    maxRenderHp: Math.ceil(ENEMY_RENDER_MAX_HPS_BASE[enemyTypeIndex] + level * 0.5)
+  });
+}
+
+// Spawns the boss enemy
+function spawnBoss(){
+  const y = H * 0.5;
+  const speed = 85 * parseFloat(diffRange.value); // Velocidad del jefe MUCHO más aumentada (antes 70)
+  const hp = 150; // Vida del jefe MUCHO más aumentada (antes 100)
+  const shootTimer = 0.15; // Jefe: Dispara aún más rápido (antes 0.2)
+  const numBullets = 40; // Jefe: Más balas (antes 30)
+
+  let bossImageToUse = bossImg;
+  // Fallback to a generic placeholder if bossImg isn't loaded or invalid
+  if (!bossImageToUse || !bossImageToUse.complete || bossImageToUse.naturalWidth === 0) {
+      bossImageToUse = new Image();
+      bossImageToUse.src = 'https://placehold.co/120x120/800080/FFFFFF?text=BOSS';
+  }
+
+  enemies.push({
+    x: W + 80,
+    y,
+    w: BOSS_SIZE.w,
+    h: BOSS_SIZE.h,
+    speed,
+    hp,
+    t:0,
+    shootTimer,
+    img: bossImageToUse,
+    isBoss: true,
+    numBullets,
+    maxRenderHp: 150 // Jefe: Su max HP para renderizar es 150
+  });
+}
+
+// Player's normal attack (Pegasus Ryū Sei Ken)
+function shootMeteor(){
+  const mSpeed = 640;
+  const mx = player.x + player.w*0.55;
+  const my = player.y;
+  meteors.push({ x: mx, y: my, vx: mSpeed, vy: 0, r: 10, t:0, special: false });
+  spawnParticles(mx, my, 6, 'rgba(100,180,255,0.95)');
+}
+
+// Player's special attack (multi-directional spread)
+function shootSpecialMeteor(){
+  const mSpeed = 720;
+  const mx = player.x + player.w*0.55;
+  const my = player.y;
+  const angles = [-Math.PI/6, -Math.PI/12, 0, Math.PI/12, Math.PI/6]; // -30°, -15°, 0°, 15°, 30°
+  for(const angle of angles){
+    meteors.push({
+      x: mx,
+      y: my,
+      vx: Math.cos(angle) * mSpeed,
+      vy: Math.sin(angle) * mSpeed,
+      r: 20,
+      t: 0,
+      special: true
+    });
+  }
+  spawnParticles(mx, my, 12, 'rgba(100,180,255,0.95)');
+  showTip('Pegasus Ryu Sei Ken');
+}
+
+// Helper to spawn particles for effects
+function spawnParticles(x,y,n=12,color='rgba(255,220,150,0.95)'){
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2;
+    const s = rand(60,260);
+    particles.push({ x,y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, life: rand(0.35,0.9), t:0, color, size: rand(1,3) });
+  }
+}
+
+// Helper to spawn an explosion effect
+function spawnExplosion(x,y,scale=1){
+  explosions.push({ x,y,t:0,life:0.6,scale });
+}
+
+// Helper to spawn a power-up item
+function spawnPowerUp(x,y){
+  const r = Math.random();
+  if(r < 0.20){ // Chance para 'health'
+    powerUps.push({ x, y, vx: -100, type: 'health', r: 12, t: 0, life: 5 });
+  } else if(r < 0.30){ // Chance para 'cosmo'
+    powerUps.push({ x, y, vx: -100, type: 'cosmo', r: 12, t: 0, life: 5 });
+  }
+}
+
+// Enemy's shooting behavior
+function enemyShoot(enemy){
+  if (enemy.isBoss) { // Boss specific shooting
+    const bulletSpeed = 250;
+    // For boss bullets, add a flag to make them undestroyable by player meteors
+    for (let i = 0; i < enemy.numBullets; i++) {
+      const angle = (Math.PI * 2 / enemy.numBullets) * i + enemy.t * 0.5; // Spread out, slightly rotating
+      enemyBullets.push({
+        x: enemy.x,
+        y: enemy.y,
+        vx: Math.cos(angle) * bulletSpeed,
+        vy: Math.sin(angle) * bulletSpeed,
+        r: 7,
+        t: 0,
+        isBossBullet: true // Flag for undestroyable boss bullets
+      });
+    }
+  } else { // Regular enemy shooting
+    const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+    const spd = rand(250, 380);
+    enemyBullets.push({
+      x: enemy.x - enemy.w*0.2,
+      y: enemy.y,
+      vx: Math.cos(angle) * spd,
+      vy: Math.sin(angle) * spd,
+      r: 7,
+      t: 0,
+      isBossBullet: false // Regular enemy bullets are destructible
+    });
+  }
+}
+
+// Main game update loop
+function update(dt){
+  if(paused || gameOver || gameWon) return;
+
+  // Player input movement
+  let dx=0, dy=0;
+  if(keys['a']||keys['arrowleft']) dx = -1;
+  if(keys['d']||keys['arrowright']) dx = 1;
+  if(keys['w']||keys['arrowup']) dy = -1;
+  if(keys['s']||keys['arrowdown']) dy = 1;
+  const len = Math.hypot(dx,dy) || 1;
+  player.x += (dx/len) * player.speed * dt;
+  player.y += (dy/len) * player.speed * dt;
+  player.x = clamp(player.x, 20, W - 20);
+  player.y = clamp(player.y, 36, H-36);
+
+  // Cosmo increase over time
+  // CAMBIO: Cosmo siempre al 100% en Nivel 4 (Jefe Final)
+  if (level === 4) {
+    player.cosmo = 100;
+  } else {
+    player.cosmo = clamp(player.cosmo + dt * 10, 0, 100);
+  }
+
+  // Player shooting (normal)
+  player.reloadT += dt;
+  const isShootPressed = keys['z'] || keys[' '];
+  if(autoShot.checked ? player.reloadT >= player.reload : (isShootPressed && player.reloadT >= player.reload) ){
+    shootMeteor();
+    player.reloadT = 0;
+  }
+
+  // Player special attack (requires Cosmo)
+  if(keys['x'] && player.cosmo >= 100){
+    shootSpecialMeteor();
+    player.cosmo -= 100;
+  }
+
+  // Level progression logic
+  // Nivel 4 (Jefe Final - El desafío definitivo)
+  if(score >= 15000 && level < 4){
+    level = 4;
+    enemies = [];
+    spawnBoss();
+    showTip('¡Jefe Final - El desafío definitivo!');
+  }
+  // Nivel 3 (¡Prepárate!) - Más difícil antes del jefe
+  else if(score >= 12000 && level < 3){
+    level = 3;
+    showTip('¡Nivel 3 - ¡Prepárate!');
+  }
+  // Nivel 2 (Dificultad normal)
+  else if(score >= 7000 && level < 2){
+    level = 2;
+    showTip('¡Nivel 2 - Dificultad normal!');
+  }
+  // Nivel 1 (Un poco más duro)
+  else if(score >= 3000 && level < 1){
+    level = 1;
+    showTip('¡Nivel 1 - Un poco más duro!');
+  }
+
+
+  // Update meteors (player bullets)
+  for(let i=meteors.length-1;i>=0;i--){
+    const m = meteors[i];
+    m.x += m.vx * dt;
+    m.y += m.vy * dt;
+    if(m.x < -60 || m.x > W + 60 || m.y < -60 || m.y > H + 60) meteors.splice(i,1);
+  }
+
+  // Update power-ups and handle collection
+  for(let i=powerUps.length-1;i>=0;i--){
+    const p = powerUps[i];
+    p.x += p.vx * dt;
+    p.t += dt;
+    if(p.t > p.life || p.x < -40){
+      powerUps.splice(i,1);
+      continue;
+    }
+    if(circleRectIntersect(p.x, p.y, p.r, player.x-player.w/2, player.y-player.h/2, player.w, player.h)){
+      if(p.type === 'health'){
+        lives = clamp(lives + 1, 0, 7); // Increment lives (up to max 7)
+        player.hits = 0; // Restore current life's health to full
+        showTip('Extra Life'); // Revertido: Extra Life
+      } else if(p.type === 'cosmo'){
+        player.cosmo = clamp(player.cosmo + 50, 0, 100);
+        showTip('Cosmo Burn'); // Revertido: Cosmo Burn
+      }
+      powerUps.splice(i,1);
+      // Particle color based on power-up type
+      const particleColor = p.type === 'health' ? '#ffcc66' : 'rgba(255,255,255,0.95)'; // Extra Life particles are yellow (health bar color)
+      spawnParticles(p.x, p.y, 8, particleColor);
+    }
+  }
+
+  // Enemy spawning
+  spawnT += dt;
+  if(spawnT > 0.75 && level < 4){ spawnT = 0; spawnEnemy(); } // Frecuencia de aparición reducida de 0.85 a 0.75
+
+  // Update enemies and handle player collision
+  for(let i=enemies.length-1;i>=0;i--){
+    const en = enemies[i];
+    en.x -= en.speed * dt;
+    en.t += dt;
+    en.y += Math.sin(en.t*3 + i) * 8 * dt;
+
+    // Enemy shooting timer
+    en.shootTimer -= dt;
+    if(en.shootTimer <= 0){
+      enemyShoot(en);
+      en.shootTimer = en.isBoss ? rand(0.15, 0.4) / parseFloat(diffRange.value) : rand(0.8, 2.2) / parseFloat(diffRange.value) / (1 + level * 0.15); // Boss shoots faster
+    }
+
+    // Collision with player
+    if(rectIntersect(en.x-en.w/2, en.y-en.h/2, en.w, en.h, player.x-player.w/2, player.y-player.h/2, player.w, player.h)){
+      enemies.splice(i,1);
+      player.hits += 1;
+      if(player.hits >= 5){ // Player takes 5 hits to lose a life
+        lives -= 1;
+        player.hits = 0;
+      }
+      spawnExplosion(player.x + 10, player.y, 1);
+      spawnParticles(player.x, player.y, 20, 'rgba(255,110,110,0.95)');
+      if(lives <= 0) gameOver = true;
+    }
+  }
+
+  // Update enemy bullets and handle player collision
+  for(let i=enemyBullets.length-1;i>=0;i--){
+    const b = enemyBullets[i];
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+    b.t += dt;
+    if(b.x < -40 || b.x > W + 40 || b.y < -40 || b.y > H + 40){
+      enemyBullets.splice(i,1);
+      continue;
+    }
+    if(circleRectIntersect(b.x, b.y, b.r, player.x-player.w/2, player.y-player.h/2, player.w, player.h)){
+      enemyBullets.splice(i,1);
+      player.hits += 1;
+      if(player.hits >= 5){ // Player takes 5 hits to lose a life
+        lives -= 1;
+        player.hits = 0;
+      }
+      spawnExplosion(player.x, player.y, 0.9);
+      spawnParticles(player.x, player.y, 12, 'rgba(255,90,90,0.95)');
+      if(lives <= 0) gameOver = true;
+      continue;
+    }
+  }
+
+  // Meteor hits enemy logic
+  for(let i=meteors.length-1;i>=0;i--){
+    const m = meteors[i];
+    for(let j=enemies.length-1;j>=0;j--){
+      const en = enemies[j];
+      if(circleRectIntersect(m.x,m.y,m.r, en.x-en.w/2, en.y-en.h/2, en.w, en.h)){
+        en.hp -= m.special ? 3 : 1; // Special meteors do more damage
+        meteors.splice(i,1);
+        spawnParticles(m.x, m.y, 8, 'rgba(255,220,120,0.95)');
+        if(en.hp <= 0){
+          score += 120 + Math.floor(en.speed/40);
+          spawnExplosion(en.x, en.y, 1.2);
+          if(level < 4) spawnPowerUp(en.x, en.y); // Drop power-up if not boss level
+          enemies.splice(j,1);
+          if(level === 4 && enemies.length === 0){ // Game won if boss is defeated
+            gameWon = true;
+            showTip('"NUESTRO COSMO ES INMORTAL, VOY A ELEVAR MI COSMO HASTA EL INFINITO"'); // Updated game won message
+          }
+        } else {
+          score += 20; // Minor score for hitting
         }
-        
-        // Move player car
-        function movePlayer() {
-            if (keys.ArrowLeft) {
-                player.x -= player.speed;
-            }
-            if (keys.ArrowRight) {
-                player.x += player.speed;
-            }
-            if (keys.ArrowUp) {
-                player.y -= player.speed;
-            }
-            if (keys.ArrowDown) {
-                player.y += player.speed;
-            }
-            
-            updatePlayerPosition();
-        }
-        
-        // Check if player hits road edges
-        function checkRoadEdges() {
-            // Left edge (83px is road start)
-            if (player.x < 83) {
-                player.x = 83;
-                handleCrash(null);
-            }
-            // Right edge (83 + 189 = 272px is road end)
-            else if (player.x + player.width > 272) {
-                player.x = 272 - player.width;
-                handleCrash(null);
-            }
-            
-            // Top and bottom boundaries
-            if (player.y < 0) {
-                player.y = 0;
-            } else if (player.y + player.height > 614) {
-                player.y = 614 - player.height;
-            }
-            
-            updatePlayerPosition();
-        }
-        
-        function updatePlayerPosition() {
-            playerCar.style.left = `${player.x}px`;
-            playerCar.style.top = `${player.y}px`;
-        }
-        
-        // Spawn enemy car con dimensiones específicas
-        function spawnEnemy() {
-            const carType = Math.floor(Math.random() * 4) + 1;
-            const enemy = document.createElement('div');
-            enemy.className = `enemy-car-${carType}`;
-            
-            // Configuración por tipo
-            let config;
-            switch(carType) {
-                case 1: // Carro enemigo amarillo
-                    config = { width: 30, height: 34, speed: 2.2, scoreValue: 10 };
-                    break;
-                case 2: // Carro enemigo azul
-                    config = { width: 29, height: 39, speed: 2.0, scoreValue: 15 };
-                    break;
-                case 3: // Carro enemigo tractomula
-                    config = { width: 40, height: 80, speed: 2.8, scoreValue: 20 };
-                    break;
-                case 4: // Carro enemigo rojo
-                    config = { width: 22, height: 30, speed: 1.0, scoreValue: 25 };
-                    break;
-            }
-            
-            const lane = Math.floor(Math.random() * 3);
-            const x = 88 + (lane * 60) + Math.random() * 15 - 7.5;
-            const y = -config.height;
-            
-            enemy.style.left = `${x}px`;
-            enemy.style.top = `${y}px`;
-            
-            gameContainer.appendChild(enemy);
-            
-            enemies.push({
-                element: enemy,
-                x: x,
-                y: y,
-                ...config,
-                type: carType
-            });
-        }
-        
-        // Spawn fuel can
-        function spawnFuel() {
-            const fuelCan = document.createElement('div');
-            fuelCan.className = 'fuel';
-            
-            const x = 88 + Math.random() * 165;
-            const y = -36;
-            
-            fuelCan.style.left = `${x}px`;
-            fuelCan.style.top = `${y}px`;
-            
-            gameContainer.appendChild(fuelCan);
-            
-            fuels.push({
-                element: fuelCan,
-                x: x,
-                y: y,
-                width: 22,
-                height: 36,
-                speed: 1 + Math.random() * gameSpeed
-            });
-        }
-        
-        // Move enemies
-        function moveEnemies() {
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                const enemy = enemies[i];
-                enemy.y += enemy.speed;
-                enemy.element.style.top = `${enemy.y}px`;
-                
-                // Remove if off screen
-                if (enemy.y > 614) {
-                    enemy.element.remove();
-                    enemies.splice(i, 1);
-                }
-            }
-        }
-        
-        // Move fuel cans
-        function moveFuel() {
-            for (let i = fuels.length - 1; i >= 0; i--) {
-                const fuelCan = fuels[i];
-                fuelCan.y += fuelCan.speed;
-                fuelCan.element.style.top = `${fuelCan.y}px`;
-                
-                // Remove if off screen
-                if (fuelCan.y > 614) {
-                    fuelCan.element.remove();
-                    fuels.splice(i, 1);
-                }
-            }
-        }
-        
-        // Check collisions
-        function checkCollisions() {
-            // Enemy collisions
-            for (let i = 0; i < enemies.length; i++) {
-                const enemy = enemies[i];
-                if (checkCollision(player, enemy)) {
-                    handleCrash(enemy);
-                    return;
-                }
-            }
-            
-            // Fuel collisions
-            for (let i = 0; i < fuels.length; i++) {
-                const fuelCan = fuels[i];
-                if (checkCollision(player, fuelCan)) {
-                    collectFuel(fuelCan);
-                    return;
-                }
-            }
-        }
-        
-        // Check if two objects collide
-        function checkCollision(obj1, obj2) {
-            return obj1.x < obj2.x + obj2.width &&
-                   obj1.x + obj1.width > obj2.x &&
-                   obj1.y < obj2.y + obj2.height &&
-                   obj1.y + obj1.height > obj2.y;
-        }
-        
-        // Handle crash with enemy or road edge
-        function handleCrash(enemy) {
-            // Play crash sound
-            crashSound.currentTime = 0;
-            crashSound.play();
-            
-            // Create explosion at player position
-            createExplosion(player.x, player.y);
-            
-            // Remove enemy if it was a collision
-            if (enemy) {
-                enemy.element.remove();
-                enemies = enemies.filter(e => e !== enemy);
-                
-                // Sumar puntos según el tipo de carro
-                score += enemy.scoreValue;
-                scoreDisplay.textContent = score;
-            }
-            
-            // Lose fuel
-            fuel -= 30;
-            if (fuel <= 0) {
-                fuel = 0;
-                gameOver();
-            }
-            fuelLevel.style.width = `${fuel}%`;
-            
-            // Flash screen red
-            gameContainer.style.backgroundColor = '#300';
-            setTimeout(() => {
-                gameContainer.style.backgroundColor = '#222';
-            }, 200);
-        }
-        
-        // Handle fuel collection
-        function collectFuel(fuelCan) {
-            // Play fuel sound
-            fuelSound.currentTime = 0;
-            fuelSound.play();
-            
-            // Add fuel
-            fuel = Math.min(100, fuel + 25);
-            fuelLevel.style.width = `${fuel}%`;
-            
-            // Remove fuel can
-            fuelCan.element.remove();
-            fuels = fuels.filter(f => f !== fuelCan);
-            
-            // Add score
-            score += 50;
-            scoreDisplay.textContent = score;
-        }
-        
-        // Create explosion effect
-        function createExplosion(x, y) {
-            const explosion = document.createElement('div');
-            explosion.className = 'explosion';
-            explosion.style.left = `${x - 5}px`;
-            explosion.style.top = `${y - 5}px`;
-            
-            gameContainer.appendChild(explosion);
-            
-            // Remove after animation
-            setTimeout(() => {
-                explosion.remove();
-            }, 500);
-        }
-        
-        // Update game state (score, fuel)
-        function updateGameState() {
-            // Decrease fuel over time
-            fuel -= 0.05;
-            fuelLevel.style.width = `${fuel}%`;
-            
-            // Increase score based on speed
-            score += Math.floor(gameSpeed);
-            scoreDisplay.textContent = score;
-            
-            // Increase difficulty
-            if (score % 500 === 0) {
-                gameSpeed += 0.2;
-            }
-            
-            // Game over if no fuel
-            if (fuel <= 0) {
-                gameOver();
-            }
-        }
-        
-        // Game over
-        function gameOver() {
-            gameRunning = false;
-            cancelAnimationFrame(animationId);
-            
-            // Stop engine sound
-            engineSound.pause();
-            
-            // Show game over screen
-            finalScoreDisplay.textContent = score;
-            gameOverScreen.style.display = 'flex';
-        }
-       
-      
-    </script>
+        break;
+      }
+    }
+  }
+
+  // Meteor hits enemy bullet logic (bullets cancel each other out)
+  for(let i=meteors.length-1;i>=0;i--){
+    const m = meteors[i];
+    for(let j=enemyBullets.length-1;j>=0;j--){
+      const b = enemyBullets[j];
+      // CAMBIO: Quitar la condición !b.isBossBullet para que los ataques del jugador destruyan TODAS las balas enemigas
+      if (circleRectIntersect(m.x, m.y, m.r, b.x - b.r, b.y - b.r, b.r * 2, b.r * 2)) {
+        meteors.splice(i,1);
+        enemyBullets.splice(j,1);
+        spawnParticles(m.x, m.y, 8, 'rgba(255,220,120,0.95)');
+        break;
+      }
+    }
+  }
+
+  // Update particles animation
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.t += dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vx *= 0.985; p.vy *= 0.985; // Slow down particles
+    if(p.t > p.life) particles.splice(i,1);
+  }
+
+  // Update explosions animation
+  for(let i=explosions.length-1;i>=0;i--){
+    const ex = explosions[i];
+    ex.t += dt;
+    if(ex.t > ex.life) explosions.splice(i,1);
+  }
+
+  // Random enemy shooting (for regular enemies)
+  // Boss shooting handled within enemy loop based on isBoss flag
+  if(Math.random() < 0.006 && enemies.length && level < 4){
+    const e = enemies[Math.floor(Math.random()*enemies.length)];
+    if (!e.isBoss) { // Only regular enemies fire randomly from here
+      enemyShoot(e);
+    }
+  }
+
+  // Update HUD text
+  levelText.textContent = 'Nivel: ' + (level === 4 ? 'Jefe Final' : level);
+  scoreText.textContent = 'Puntaje: ' + Math.floor(score);
+  lifeText.textContent = 'Vidas: ' + lives;
+  cosmoText.textContent = 'Cosmo: ' + Math.floor(player.cosmo) + '%';
+}
+
+// Intersection helper functions
+function rectIntersect(x1,y1,w1,h1,x2,y2,w2,h2){
+  return !(x2 > x1+w1 || x2+w2 < x1 || y2 > y1+h1 || y2+h2 < y1);
+}
+function circleRectIntersect(cx,cy,r, rx,ry,rw,rh){
+  const closestX = clamp(cx, rx, rx+rw);
+  const closestY = clamp(cy, ry, ry+rh);
+  const dx = cx - closestX, dy = cy - closestY;
+  return (dx*dx + dy*dy) <= (r*r);
+}
+
+// Game rendering function
+function render(){
+  ctx.clearRect(0,0,W,H);
+
+  // Render background image with seamless parallax
+  if(imgs.bg && imgs.bg.complete && imgs.bg.naturalWidth !== 0){
+    const backgroundSpeed = 42; // Speed of the background scroll
+    bgOff = (bgOff + backgroundSpeed * (1/60)); // Update offset based on a fixed frame rate (60fps)
+    const scaleY = H / imgs.bg.height; // Scale background to fit canvas height
+    const scaledWidth = imgs.bg.width * scaleY; // Calculate scaled width
+
+    // Ensure bgOff wraps around the scaled width of the background image for seamless looping
+    bgOff %= scaledWidth;
+
+    // Draw the image multiple times to cover the entire canvas width
+    // Draw the current segment
+    ctx.drawImage(imgs.bg, 0, 0, imgs.bg.width, imgs.bg.height, -bgOff, 0, scaledWidth, H);
+    // Draw the next segment to the right for seamless looping
+    ctx.drawImage(imgs.bg, 0, 0, imgs.bg.width, imgs.bg.height, scaledWidth - bgOff, 0, scaledWidth, H);
+
+    // If a significant portion of the image has scrolled past, you might need a third one
+    // to ensure full coverage, especially if the image width is less than canvas width.
+    if (scaledWidth < W) {
+        ctx.drawImage(imgs.bg, 0, 0, imgs.bg.width, imgs.bg.height, (scaledWidth * 2) - bgOff, 0, scaledWidth, H);
+    }
+
+  } else {
+    ctx.fillStyle = '#02061a'; // Fallback background color if image not loaded
+    ctx.fillRect(0,0,W,H);
+  }
+
+  // Render subtle background layers (for visual depth)
+  for(let i=0;i<5;i++){
+    ctx.fillStyle = 'rgba(6,12,24,' + (0.02 + i*0.008) + ')';
+    ctx.fillRect(0, i*80 + ((Date.now()/1000)*(6+i*3)) % 160 - 80, W, 80);
+  }
+
+  // Render enemies
+  for(const e of enemies){
+    if(e.img && e.img.complete && e.img.naturalWidth !== 0){
+      const w = e.w, h = e.h;
+      ctx.save();
+      ctx.translate(e.x, e.y);
+      ctx.rotate(Math.sin(e.t*2)*0.08);
+      ctx.drawImage(e.img, -w/2, -h/2, w, h);
+      ctx.restore();
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(e.x - e.w/2, e.y - e.h/2 - 10, e.w, 6);
+      ctx.fillStyle = '#ffcc66';
+      // Barra de salud renderizada usando maxRenderHp almacenado en el enemigo
+      const hpPerc = Math.max(0, e.hp) / e.maxRenderHp;
+      ctx.fillRect(e.x - e.w/2, e.y - e.h/2 - 10, e.w * hpPerc, 6);
+    } else {
+      ctx.fillStyle = '#ff9966';
+      ctx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h);
+    }
+  }
+
+  // Render player's meteors
+  for(const m of meteors){
+    ctx.fillStyle = 'rgba(100,180,255,0.95)';
+    ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath(); ctx.fillStyle = 'rgba(100,180,255,0.12)'; ctx.arc(m.x, m.y, m.r*2.8, 0, Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // Render enemy bullets
+  for(const b of enemyBullets){
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(255,90,90,0.95)';
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath(); ctx.fillStyle = 'rgba(255,120,120,0.06)'; ctx.arc(b.x, b.y, b.r*3, 0, Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // Render power-ups
+  for(const p of powerUps){
+    let powerUpColor;
+    if(p.type === 'health'){
+      powerUpColor = '#ffcc66'; // Extra Life is yellow (health bar color)
+    } else if(p.type === 'cosmo'){
+      powerUpColor = 'rgba(255,255,255,0.95)'; // White for cosmo
+    }
+    ctx.fillStyle = powerUpColor;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Render player (Seiya)
+  const pw = player.w, ph = player.h;
+  if(playerImg && playerImg.complete && playerImg.naturalWidth !== 0){
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    const ang = (player.x - 90)/400 * 0.15;
+    ctx.rotate(ang);
+    ctx.drawImage(playerImg, -pw/2, -ph/2, pw, ph);
+    ctx.restore();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath(); ctx.fillStyle = 'rgba(255,220,150,0.04)'; ctx.ellipse(player.x+6, player.y+6, pw*0.8, ph*0.3, 0, 0, Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    // Render player health bar
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(player.x - pw/2, player.y - ph/2 - 10, pw, 6);
+    ctx.fillStyle = '#ffcc66';
+    // Calculate health percentage based on `player.hits` (0-5, 0 is full health)
+    const currentHealthFraction = (5 - player.hits) / 5;
+    const hpPerc = Math.max(0, currentHealthFraction);
+    ctx.fillRect(player.x - pw/2, player.y - ph/2 - 10, pw * hpPerc, 6);
+    // Render player Cosmo bar
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(player.x - pw/2, player.y + ph/2 + 4, pw, 6);
+    ctx.fillStyle = '#ffffff';
+    const cosmoPerc = Math.max(0, player.cosmo) / 100; // Cosmo bar renderizado con límite de 100
+    ctx.fillRect(player.x - pw/2, player.y + ph/2 + 4, pw * cosmoPerc, 6);
+  } else {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(player.x, player.y, 22, 0, Math.PI*2); ctx.fill();
+    // Render player health bar
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(player.x - pw/2, player.y - ph/2 - 10, pw, 6);
+    ctx.fillStyle = '#ffcc66';
+    const currentHealthFraction = (5 - player.hits) / 5;
+    const hpPerc = Math.max(0, currentHealthFraction);
+    ctx.fillRect(player.x - pw/2, player.y - ph/2 - 10, pw * hpPerc, 6);
+    // Render player Cosmo bar
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(player.x - pw/2, player.y + ph/2 + 4, pw, 6);
+    ctx.fillStyle = '#ffffff';
+    const cosmoPerc = Math.max(0, player.cosmo) / 100; // Cosmo bar renderizado con límite de 100
+    ctx.fillRect(player.x - pw/2, player.y + ph/2 + 4, pw * cosmoPerc, 6);
+  }
+
+  // Render particles
+  for(const p of particles){
+    const a = 1 - (p.t / p.life);
+    ctx.globalAlpha = clamp(a,0,1);
+    if(imgs.star && imgs.star.complete && imgs.star.naturalWidth !== 0 && p.color !== 'rgba(100,180,255,0.95)'){
+      const s = p.size*3 + (1-a)*6;
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.drawImage(imgs.star, p.x - s/2, p.y - s/2, s, s);
+      ctx.globalCompositeOperation = 'source-over';
+    } else {
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Render explosions
+  for(const ex of explosions){
+    const t = ex.t / ex.life;
+    const s = 36 * (1 + t*2) * ex.scale;
+    if(imgs.explosion && imgs.explosion.complete && imgs.explosion.naturalWidth !== 0){
+      ctx.globalAlpha = clamp(1 - t, 0, 1);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.drawImage(imgs.explosion, ex.x - s/2, ex.y - s/2, s, s);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.fillStyle = 'rgba(255,200,80,' + (1 - t) + ')';
+      ctx.beginPath(); ctx.arc(ex.x, ex.y, s/2, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // Overlay gradient for visual depth
+  const vg = ctx.createLinearGradient(0,0,0,H);
+  vg.addColorStop(0,'rgba(0,0,0,0.06)');
+  vg.addColorStop(0.6,'rgba(0,0,0,0)');
+  vg.addColorStop(1,'rgba(0,0,0,0.22)');
+  ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
+
+  // Render game state messages (Paused, Game Over, Game Won)
+  if(paused || gameOver || gameWon){
+    ctx.save();
+    ctx.fillStyle = 'rgba(4,8,14,0.6)';
+    ctx.fillRect(W*0.12, H*0.28, W*0.76, H*0.44);
+    ctx.fillStyle = '#e6f7ff';
+    ctx.textAlign = 'center';
+    ctx.font = '28px Inter, sans-serif';
+    if(paused) ctx.fillText('PAUSADO', W*0.5, H*0.46);
+    if(gameOver){
+      ctx.fillStyle = '#ffd9d9';
+      ctx.fillText('GAME OVER', W*0.5, H*0.44);
+      ctx.fillStyle = '#e6f7ff';
+      ctx.font = '16px Inter, sans-serif';
+      ctx.fillText('Presiona R para reiniciar', W*0.5, H*0.52);
+      ctx.fillText('Puntaje: ' + Math.floor(score), W*0.5, H*0.58);
+    }
+    if(gameWon){
+      ctx.fillStyle = '#d9ffd9';
+      ctx.fillText('¡VICTORIA!', W*0.5, H*0.44);
+      ctx.fillStyle = '#e6f7ff';
+      ctx.font = '16px Inter, sans-serif';
+      ctx.fillText('"NUESTRO COSMO ES INMORTAL, VOY A ELEVAR MI COSMO HASTA EL INFINITO"', W*0.5, H*0.52, W*0.7); // Updated game won message text
+      ctx.fillText('Puntaje: ' + Math.floor(score), W*0.5, H*0.58);
+    }
+    ctx.restore();
+  }
+}
+
+// main loop
+function loop(ts){
+  if(!lastTime) lastTime = ts;
+  const dt = Math.min(0.033, (ts - lastTime)/1000);
+  lastTime = ts;
+
+  // Eliminado el intento de reproducir música de fondo
+  // if (!musicStarted && !paused && !gameOver && !gameWon) {
+  //     bgMusic.play().then(() => {
+  //         musicStarted = true;
+  //     }).catch(e => {
+  //         // Autoplay blocked, user interaction needed to play music:, e);
+  //         console.log("Autoplay blocked, user interaction needed to play music:", e);
+  //     });
+  // }
+
+  if(!paused && !gameOver && !gameWon) update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// input extras
+window.addEventListener('keydown', e=>{
+  if(e.key.toLowerCase() === 'p'){ paused = !paused; showTip(paused? 'Pausado' : 'Reanudado'); }
+  if(e.key.toLowerCase() === 'r'){ // Reinicio sin condición de gameOver o gameWon
+    score = 0; lives = 7; level = 0; player.x = 90; player.y = H*0.5; player.hits = 0; player.cosmo = 0; // Vidas reiniciadas a 7
+    enemies = []; meteors = []; particles=[]; explosions=[]; enemyBullets=[]; powerUps=[]; gameOver=false; gameWon=false; bgOff = 0;
+    showTip('Reiniciado');
+    for(let i=0;i<3;i++) spawnEnemy(); // Re-spawn initial enemies
+  }
+});
+
+canvas.addEventListener('dblclick', ()=>{ paused = !paused; showTip(paused? 'Pausado' : 'Reanudado'); });
+
+// Initial game setup: spawn a few enemies to start
+for(let i=0;i<3;i++) spawnEnemy();
+</script>
 </body>
 </html>
