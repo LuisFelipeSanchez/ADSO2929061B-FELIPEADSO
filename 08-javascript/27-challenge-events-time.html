@@ -2,382 +2,1033 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Ikaruga‑like • HTML único (funcionando)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Seiya: Meteoros de Pegaso — Shooter Horizontal</title>
 <style>
   :root{
-    --bg1:#0a1124; --bg2:#0f1b38; --hud:#e6f7ff; --accent:#7fffd4;
+    --bg1:#030216; --bg2:#07102b; --accent:#ffd36b;
+    --hud:#e8f7ff;
   }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--hud)}
-  #wrap{display:flex;align-items:center;justify-content:center;min-height:100%;padding:16px}
-  canvas{border-radius:14px;box-shadow:0 10px 36px rgba(2,6,23,.7);display:block;background:transparent}
-  .hud{position:fixed;left:16px;top:16px;user-select:none;text-shadow:0 1px 6px rgba(0,0,0,.5)}
-  .hud .t{font-weight:700}
-  .hud .s{font-size:13px;opacity:.95}
-  .help{position:fixed;right:16px;top:16px;background:rgba(255,255,255,.05);padding:10px 12px;border-radius:10px;font-size:13px;line-height:1.35}
-  .center{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.04);border-radius:12px;padding:16px 18px;backdrop-filter:blur(6px);box-shadow:0 8px 40px rgba(0,0,0,.5);display:none}
-  .btn{display:inline-block;margin-top:10px;padding:8px 12px;border-radius:10px;background:linear-gradient(180deg,#2a6bff,#1b4fe6);color:#fff;font-weight:700;text-decoration:none;cursor:pointer}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--hud)}
+  .wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 12px;}
+  #gameArea{position:relative; width:960px; max-width:96vw;}
+  canvas{display:block;width:100%;height:auto;border-radius:12px;box-shadow:0 14px 40px rgba(3,8,20,0.75);}
+  .hudBox{position:absolute; left:16px; top:12px; color:var(--hud); text-shadow:0 6px 18px rgba(0,0,0,0.6);}
+  .hudTitle{font-weight:800; font-size:18px;}
+  .hudStat{margin-top:6px;font-weight:600; font-size:14px;}
+  .controls{position:absolute; right:14px; top:12px; background:rgba(255,255,255,0.02); padding:10px 12px; border-radius:10px; font-size:13px; box-shadow:0 8px 30px rgba(0,0,0,0.45);}
+  .topbar{display:flex;gap:12px;align-items:center; flex-wrap: wrap;} /* Added flex-wrap */
+  label.button{background:linear-gradient(180deg,#2a6bff,#1b4fe6);padding:8px 12px;border-radius:10px;color:white;font-weight:700;cursor:pointer;display:inline-block}
+  input[type="text"]{
+    background:rgba(255,255,255,0.1);
+    border:1px solid rgba(255,255,255,0.2);
+    padding:8px 12px;
+    border-radius:10px;
+    color:var(--hud);
+    font-size:13px;
+    width: 200px; /* Fixed width for text input */
+    box-sizing: border-box;
+  }
+  .muted{opacity:0.82;font-size:13px}
+  .centerMsg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));padding:14px 18px;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.5);text-align:center}
+  footer{color:rgba(255,255,255,0.14);font-size:12px;margin-top:6px}
+  /* Responsive adjustments for topbar buttons */
+  @media (max-width: 980px) { /* Adjusted breakpoint for more space */
+    .topbar > div { /* Target direct children divs of topbar */
+      flex-basis: calc(50% - 10px); /* Two columns layout */
+      margin-bottom: 10px; /* Space between rows */
+      max-width: unset; /* Override fixed width for responsiveness */
+      width: auto;
+    }
+    .topbar > div:last-child { /* Adjust last div if needed */
+      flex-basis: 100%; /* For controls text */
+      text-align: center;
+    }
+    .controls{display:none} /* Hide for small screens as before */
+  }
+  @media (max-width: 600px) {
+    .topbar > div {
+      flex-basis: 100%; /* Single column layout for very small screens */
+    }
+  }
 </style>
 </head>
 <body>
-  <div id="wrap">
-    <canvas id="game" width="540" height="960" aria-label="Ikaruga-like"></canvas>
+<div class="wrap">
+  <!-- This topbar now contains only the game controls, image upload inputs are moved to a hidden div -->
+  <div class="topbar" style="width:960px;max-width:96vw;justify-content:flex-end;">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="muted">Mover: WASD / Flechas · Disparar: Z / Espacio · Especial: X · Pausa: P</div>
+    </div>
   </div>
 
-  <div class="hud" id="hud">
-    <div class="t">Ikaruga‑like • Prototype</div>
-    <div class="s" id="score">Puntuación: 0</div>
-    <div class="s" id="life">Vida: 5</div>
-    <div class="s" id="pol">Polaridad: BLANCO</div>
+  <!-- Hidden div for image upload controls -->
+  <div id="imageUploadControls" style="display:none;">
+    <div style="display:flex; flex-wrap: wrap; gap: 10px; padding: 10px; background: #1a2a4a; border-radius: 12px; margin-top: 10px;">
+      <div>
+        <label class="button" id="uploadPlayerLabel">Cargar sprite (Seiya)</label>
+        <input id="playerFileInput" type="file" accept="image/*" />
+        <span class="muted" style="margin-left:10px">Saltar: usa sprite por defecto</span>
+      </div>
+
+      <div style="display:flex; flex-direction: column; gap: 5px;">
+        <label class="button" id="uploadEnemyFilesLabel">Cargar sprites (Enemigos)</label>
+        <input id="enemyFilesInput" type="file" accept="image/*" multiple />
+        <span class="muted" style="margin-top:-5px">Múltiples imágenes, al azar.</span>
+        <input type="text" id="enemyUrlInput" placeholder="URL de sprite de enemigo" />
+        <label class="button" id="loadEnemyUrlLabel">Cargar URL (añade a la lista)</label>
+      </div>
+
+      <div style="display:flex; flex-direction: column; gap: 5px;">
+        <label class="button" id="uploadBossFileLabel">Cargar sprite (Jefe)</label>
+        <input id="bossFileInput" type="file" accept="image/*" />
+        <span class="muted" style="margin-top:-5px">Imagen para el Jefe Final.</span>
+        <input type="text" id="bossUrlInput" placeholder="URL de sprite de Jefe" />
+        <label class="button" id="loadBossUrlLabel">Cargar URL (Jefe)</label>
+      </div>
+    </div>
   </div>
 
-  <div class="help">
-    <div><strong>Controles</strong></div>
-    <div>WASD / Flechas: mover</div>
-    <div>Z o Espacio: disparar</div>
-    <div>X: cambiar polaridad</div>
-    <div>P: pausa • R: reiniciar</div>
-    <div style="opacity:.8;margin-top:6px">Tip: click en el lienzo cambia polaridad</div>
+  <div id="gameArea">
+    <canvas id="c" width="960" height="540"></canvas>
+
+    <div class="hudBox" id="hud">
+      <div class="hudTitle">Seiya: Meteoros de Pegaso</div>
+      <div class="hudStat" id="levelText">Nivel: 0</div>
+      <div class="hudStat" id="scoreText">Puntaje: 0</div>
+      <div class="hudStat" id="lifeText">Vidas: 7</div>
+      <div class="hudStat" id="cosmoText">Cosmo: 0%</div>
+    </div>
+
+    <div class="controls">
+      <div style="font-weight:700;margin-bottom:6px">Opciones</div>
+      <div style="font-size:13px;margin-bottom:6px">Velocidad enemigo: <input id="diff" type="range" min="0.7" max="1.6" step="0.05" value="1"> </div>
+      <div style="font-size:13px">Disparos automáticos: <input id="autoShot" type="checkbox" checked></div>
+    </div>
+
+    <div class="centerMsg" id="centerMsg" style="display:none">
+      <div style="font-size:20px;font-weight:800">¡Pegaso Meteoro!</div>
+      <div style="margin-top:8px">Presiona Z o Espacio para disparar, X para ataque especial. Carga tu sprite para usar tu Seiya.</div>
+    </div>
   </div>
 
-  <div class="center" id="overlay"><div id="overlayText" style="font-weight:800;font-size:20px">PAUSADO</div><a id="restart" class="btn" style="display:none">Reiniciar</a></div>
+  <footer>Prototipo educativo — usa tu sprite para reemplazar la nave</footer>
+</div>
+
+<!-- 
+  Las etiquetas de audio han sido eliminadas ya que la funcionalidad de audio fue desactivada.
+-->
+
 
 <script>
-/* ======================================================
-   Ikaruga‑like autocontenido (sin imágenes externas)
-   - Polaridad (blanco/negro), absorción de balas del mismo color
-   - Oleadas simples de enemigos, patrones radial + dirigido
-   - HUD, pausa, reinicio, partículas, parallax
-   ====================================================== */
-
-const canvas = document.getElementById('game');
+// Canvas setup
+const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-const HUD = {
-  score: document.getElementById('score'),
-  life: document.getElementById('life'),
-  pol: document.getElementById('pol'),
-  overlay: document.getElementById('overlay'),
-  overlayText: document.getElementById('overlayText'),
-  restart: document.getElementById('restart'),
+const W = canvas.width, H = canvas.height;
+
+// Audio elements (variables eliminadas)
+
+
+// Controls & UI elements references (These are now effectively unused as UI is hidden)
+const playerFileInput = document.getElementById('playerFileInput');
+const uploadPlayerLabel = document.getElementById('uploadPlayerLabel');
+const enemyFilesInput = document.getElementById('enemyFilesInput');
+const uploadEnemyFilesLabel = document.getElementById('uploadEnemyFilesLabel');
+const enemyUrlInput = document.getElementById('enemyUrlInput');
+const loadEnemyUrlLabel = document.getElementById('loadEnemyUrlLabel');
+const bossFileInput = document.getElementById('bossFileInput');
+const uploadBossFileLabel = document.getElementById('uploadBossFileLabel');
+const bossUrlInput = document.getElementById('bossUrlInput');
+const loadBossUrlLabel = document = document.getElementById('loadBossUrlLabel');
+
+const centerMsg = document.getElementById('centerMsg');
+const scoreText = document.getElementById('scoreText');
+const lifeText = document.getElementById('lifeText');
+const cosmoText = document.getElementById('cosmoText');
+const levelText = document.getElementById('levelText');
+const diffRange = document.getElementById('diff');
+const autoShot = document.getElementById('autoShot');
+
+// Event listeners for file and URL inputs (kept in code, but UI elements are hidden)
+// If you want to use the UI again, you would need to change "display:none" in the HTML for 'imageUploadControls'.
+uploadPlayerLabel.addEventListener('click', ()=> playerFileInput.click());
+playerFileInput.addEventListener('change', handlePlayerFile);
+
+uploadEnemyFilesLabel.addEventListener('click', ()=> enemyFilesInput.click());
+enemyFilesInput.addEventListener('change', handleEnemyFiles);
+
+loadEnemyUrlLabel.addEventListener('click', handleEnemyUrl);
+
+uploadBossFileLabel.addEventListener('click', ()=> bossFileInput.click());
+bossFileInput.addEventListener('change', handleBossFile);
+
+loadBossUrlLabel.addEventListener('click', handleBossUrl);
+
+
+// Default sprite URLs for player, enemies, and boss
+// ***************************************************************
+// MODIFICA ESTAS URLS PARA PERSONALIZAR LOS SPRITES
+// ***************************************************************
+
+// URL para Seiya (el jugador)
+const DEFAULT_PLAYER_SPRITE = 'https://i.pinimg.com/originals/0a/2b/80/0a2b806580a1f8e13bf75e96aded066e.gif';
+
+// Array de URLs para enemigos normales. He cambiado las URLs a placeholders más fiables.
+// Puedes cambiarlas de nuevo si tienes URLs específicas que funcionen mejor para ti.
+// EL ORDEN IMPORTA para los tamaños: [0] = PEQUEÑO, [1] = MEDIANO, [2] = GRANDE
+const DEFAULT_ENEMY_SPRITE_URLS = [
+  'https://i.pinimg.com/1200x/98/30/a5/9830a58101e3db8c1abcdb95384575d3.jpg', // Enemigo PEQUEÑO (Placeholder 1)
+  'https://i.pinimg.com/1200x/3a/93/b1/3a93b192a4de9fcbb26aba845cfd0ff4.jpg', // Enemigo MEDIANO (Placeholder 2)
+  'https://i.pinimg.com/1200x/ca/a1/69/caa16953167294d515463531059dfeff.jpg',  // Enemigo GRANDE (Placeholder 3)
+];
+
+// URL para el Jefe Final
+const DEFAULT_BOSS_SPRITE = 'https://i.pinimg.com/1200x/2c/b1/e8/2cb1e8306a9a7f350b358a35a141d55f.jpg';
+
+// URL para el escenario/fondo. Asegúrate de que esta imagen sea "tileable" (que pueda repetirse sin bordes)
+// Puedes cambiar esta URL por la de tu propia imagen de fondo.
+const DEFAULT_BACKGROUND_SPRITE = 'https://i.pinimg.com/1200x/c6/2f/e7/c62fe76b8edb10b7f4159f00ffe9849c.jpg';
+
+// ***************************************************************
+// FIN DE LA SECCIÓN DE MODIFICACIÓN DE URLS
+// ***************************************************************
+
+
+// Define sizes for enemies based on their index in the sprite pool
+const ENEMY_SIZES = [
+    { w: 56, h: 56 }, // Small enemy size
+    { w: 64, h: 64 }, // Medium enemy size
+    { w: 80, h: 80 }  // Large enemy size
+];
+const BOSS_SIZE = { w: 120, h: 120 }; // Fixed size for the boss
+
+// Define base HP values for different enemy sizes (used for initial HP calculation)
+const ENEMY_INITIAL_BASE_HPS = [2, 4, 6]; // Base HP for small, medium, large enemies
+// Define maximum HP values for health bar rendering for different enemy sizes
+// These values represent the max HP an enemy of that type can reach (base + max random + level scaling)
+const ENEMY_RENDER_MAX_HPS_BASE = [4, 6, 8]; // (2+2, 4+2, 6+2) accounts for Math.random()*2 range (0-2)
+
+// Game assets (background, particles, explosions)
+const ASSETS_TO_LOAD = {
+  bg: DEFAULT_BACKGROUND_SPRITE,
+  star: 'https://i.ibb.co/QmL8f2y/star-field.png',
+  explosion: 'https://i.ibb.co/z5qVWMJ/explosion.png'
 };
 
-/* HiDPI / DPR scaling para verlo nítido */
-(function scaleCanvas(){
-  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-  const {width, height} = canvas; // atributos declarados en HTML
-  canvas.style.width = width + 'px';
-  canvas.style.height = height + 'px';
-  canvas.width = Math.floor(width * dpr);
-  canvas.height = Math.floor(height * dpr);
-  ctx.setTransform(dpr,0,0,dpr,0,0); // dibujamos en unidades CSS
-})();
+const imgs = {}; // Stores Image objects for background, stars, explosions
+let loadedAssetsCount = 0;
+const totalAssetsToLoad = Object.keys(ASSETS_TO_LOAD).length;
 
-/* Entrada */
-const keys = {};
-addEventListener('keydown', e=>{ const k=e.key.toLowerCase(); keys[k]=true; if([' ','z','x','p','r'].includes(k)) e.preventDefault(); });
-addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
-canvas.addEventListener('click', ()=> togglePolarity());
+// Player sprite management
+let playerImg = new Image();
+playerImg.src = DEFAULT_PLAYER_SPRITE;
 
-/* Utilidades */
-const clamp = (v,a,b)=> Math.max(a, Math.min(b, v));
-const rand  = (a,b)=> Math.random() * (b-a) + a;
+// Enemy sprites management: array for normal enemies, populated by files/URLs
+let enemySpritePool = [];
+// Load default enemy sprites into the pool initially
+DEFAULT_ENEMY_SPRITE_URLS.forEach(url => {
+  const img = new Image();
+  img.src = url;
+  img.onerror = () => { console.warn(`Error loading default enemy sprite: ${url}`); }; // Log errors for defaults
+  enemySpritePool.push(img);
+});
 
-/* Estado del juego */
-let last=0, dt=0, paused=false, over=false, tAcc=0;
-let score=0, life=5;
-const POL_WHITE=1, POL_BLACK=-1;
+// Boss sprite management: single image for the final boss
+let bossImg = new Image();
+bossImg.src = DEFAULT_BOSS_SPRITE;
+bossImg.onerror = () => { console.warn(`Error loading default boss sprite: ${DEFAULT_BOSS_SPRITE}`); }; // Log errors for default boss
 
-const player = {
-  x: canvas.width/2/ (window.devicePixelRatio||1),
-  y: 760,
-  r: 18,
-  speed: 420,
-  shootCd: 0.12,
-  shootT: 0,
-  pol: POL_WHITE
-};
+// Load initial static assets (background, star, explosion)
+for(const k in ASSETS_TO_LOAD){
+  imgs[k] = new Image();
+  imgs[k].src = ASSETS_TO_LOAD[k];
+  imgs[k].onload = ()=> {
+    loadedAssetsCount++;
+    if(loadedAssetsCount === totalAssetsToLoad) {
+      showTipImmediate(); // Show initial tip once core assets are loaded
+    }
+  };
+  imgs[k].onerror = ()=> {
+    loadedAssetsCount++;
+    if(loadedAssetsCount === totalAssetsToLoad) showTipImmediate();
+    console.warn(`Error al cargar la imagen de asset: ${ASSETS_TO_LOAD[k]}`);
+  };
+}
 
-const stars = Array.from({length:120}, ()=> ({x:rand(0,canvas.width/(window.devicePixelRatio||1)), y:rand(0,canvas.height/(window.devicePixelRatio||1)), r:rand(0.4,1.6), s:rand(5,32)}));
-const bands = Array.from({length:6}, (_,i)=>({y:i*(canvas.height/(window.devicePixelRatio||1)/6), amp:rand(18,48), speed:rand(6,20), off:rand(0,Math.PI*2)}));
+// Handler for player sprite file input
+function handlePlayerFile(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    playerImg = new Image();
+    playerImg.src = ev.target.result;
+    playerImg.onload = ()=> {
+      showTip('Sprite de Seiya cargado — ¡vamos!');
+    };
+    playerImg.onerror = () => {
+      console.warn('Error al cargar el sprite personalizado de Seiya');
+      showTip('Error al cargar el sprite de Seiya');
+    };
+  };
+  reader.readAsDataURL(f);
+}
 
-const bullets = [];        // del jugador
-const enemyBullets = [];   // del enemigo
-const enemies = [];
-const particles = [];
+// Handler for multiple enemy sprite file input
+function handleEnemyFiles(e){
+  const files = e.target.files;
+  if(!files.length) return;
 
-/* (Opcional) configuración para usar imágenes externas
-   Déjalo en false y el juego funciona con gráficos vectoriales.
-   Si quieres sprites, pon USE_IMAGES=true y rellena URLs.
-*/
-const USE_IMAGES = false;
-const IMAGES = {
-  player: '', enemy: '', bulletWhite: '', bulletBlack: '', background: ''
-};
-const loadedImgs = {};
-if (USE_IMAGES) {
-  for (const k in IMAGES) if (IMAGES[k]) {
-    const img = new Image(); img.src = IMAGES[k]; loadedImgs[k]=img;
+  enemySpritePool = []; // Clear existing sprites (including defaults)
+  let loadedCount = 0;
+  const totalFiles = files.length;
+
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.src = ev.target.result;
+      img.onload = () => {
+        enemySpritePool.push(img);
+        loadedCount++;
+        if (loadedCount === totalFiles) {
+          showTip(`Cargados ${totalFiles} sprites de enemigos.`);
+        }
+      };
+      img.onerror = () => {
+        loadedCount++;
+        if (loadedCount === totalFiles) showTip(`Error al cargar algunos sprites de enemigos.`);
+        console.warn(`Error al cargar el sprite de enemigo: ${f.name}`);
+      };
+    };
+    reader.readAsDataURL(f);
   }
 }
 
-/* Entidades */
-function spawnEnemyWave(){
-  const count = 3 + Math.floor(Math.random()*3);
-  for(let i=0;i<count;i++){
-    enemies.push({
-      x: (canvas.width/(window.devicePixelRatio||1))/(count+1)*(i+1),
-      y: -40 - i*20,
-      vx: rand(-20,20),
-      vy: rand(30,60),
-      hp: 3,
+// Handler for single enemy sprite URL input
+function handleEnemyUrl(){
+  const url = enemyUrlInput.value.trim();
+  if(!url) {
+    showTip('Por favor, ingresa una URL válida para el enemigo.');
+    return;
+  }
+  const img = new Image();
+  img.src = url;
+  img.onload = () => {
+    // Add the new image to the pool. If the pool was empty or only had defaults, this effectively adds a custom one.
+    enemySpritePool.push(img);
+    showTip('Sprite de enemigo desde URL cargado (añadido a la lista).');
+  };
+  img.onerror = () => {
+    console.warn('Error al cargar el sprite de enemigo desde URL:', url);
+    showTip('Error al cargar el sprite de enemigo desde URL.');
+  };
+}
+
+// Handler for boss sprite file input
+function handleBossFile(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    bossImg = new Image();
+    bossImg.src = ev.target.result;
+    bossImg.onload = () => {
+      showTip('Sprite de Jefe Final cargado.');
+    };
+    bossImg.onerror = () => {
+      console.warn('Error al cargar el sprite de Jefe Final desde archivo');
+      showTip('Error al cargar el sprite de Jefe Final');
+    };
+  };
+  reader.readAsDataURL(f);
+}
+
+// Handler for boss sprite URL input
+function handleBossUrl(){
+  const url = bossUrlInput.value.trim();
+  if(!url) {
+    showTip('Por favor, ingresa una URL válida para el Jefe Final.');
+    return;
+  }
+  bossImg = new Image();
+  bossImg.src = url;
+  bossImg.onload = () => {
+    showTip('Sprite de Jefe Final desde URL cargado.');
+  };
+  img.onerror = () => {
+    console.warn('Error al cargar el sprite de Jefe Final desde URL:', url);
+    showTip('Error al cargar el sprite de Jefe Final desde URL.');
+  };
+}
+
+// show center tip message
+function showTip(txt){
+  centerMsg.style.display = 'block';
+  if(txt) centerMsg.innerHTML = `<div style="font-size:20px;font-weight:800">${txt}</div>`;
+  setTimeout(()=> centerMsg.style.display = 'none', 2200);
+}
+function showTipImmediate(){
+  centerMsg.style.display = 'block';
+  setTimeout(()=> centerMsg.style.display = 'none', 2000);
+}
+
+// Game stats and initial state
+let keys = {};
+window.addEventListener('keydown', e=> { keys[e.key.toLowerCase()] = true; if([' ','z','p','x'].includes(e.key.toLowerCase())) e.preventDefault(); });
+window.addEventListener('keyup', e=> { keys[e.key.toLowerCase()] = false; });
+
+let score = 0, lives = 7, level = 0, paused = false, gameOver = false, gameWon = false;
+let player = { x: 90, y: H*0.5, w: 72, h: 72, speed: 420, reload:0.12, reloadT:0, alive:true, hits:0, cosmo:0 };
+let meteors = [];
+let enemies = [];
+let enemyBullets = [];
+let particles = [];
+let explosions = [];
+let powerUps = [];
+
+let lastTime = 0, spawnT = 0, bgOff = 0;
+
+// Helper functions for math
+const clamp = (v,a,b)=> Math.max(a,Math.min(b,v));
+const rand = (a,b)=> Math.random()*(b-a)+a;
+
+// Spawns a regular enemy
+function spawnEnemy(){
+  if(level === 4) return; // No regular enemies in boss level
+  const y = 40 + Math.random()*(H - 80);
+  const speed = (110 + Math.random()*140) * parseFloat(diffRange.value) * (1 + level * 0.2);
+
+  let enemyImageToUse;
+  let enemySize = ENEMY_SIZES[0];
+  let enemyTypeIndex = 0; // Default to small enemy type
+
+  if (enemySpritePool.length > 0) {
+    enemyTypeIndex = Math.floor(Math.random() * enemySpritePool.length) % ENEMY_SIZES.length; // Ensure index is within 0, 1, 2
+    enemyImageToUse = enemySpritePool[enemyTypeIndex]; // Use enemyTypeIndex directly for sprite pool
+    enemySize = ENEMY_SIZES[enemyTypeIndex]; // Use enemyTypeIndex for size
+  } else {
+    // Fallback if the pool is empty (shouldn't happen with defaults, but for safety)
+    enemyImageToUse = new Image();
+    enemyImageToUse.src = 'https://placehold.co/48x48/FF0000/FFFFFF?text=E';
+  }
+
+  const baseHpForThisEnemyType = ENEMY_INITIAL_BASE_HPS[enemyTypeIndex];
+  // Calculate actual HP, adding some randomness for variety
+  const hp = Math.ceil(baseHpForThisEnemyType + Math.random()*2 + level * 0.5);
+  const shootTimer = rand(0.6, 2.4) / (1 + level * 0.15);
+
+  enemies.push({
+    x: W + 80,
+    y,
+    w: enemySize.w,
+    h: enemySize.h,
+    speed,
+    hp,
+    t:0,
+    shootTimer,
+    img: enemyImageToUse,
+    // Store the maximum HP for rendering, specific to this enemy type and current level
+    maxRenderHp: Math.ceil(ENEMY_RENDER_MAX_HPS_BASE[enemyTypeIndex] + level * 0.5)
+  });
+}
+
+// Spawns the boss enemy
+function spawnBoss(){
+  const y = H * 0.5;
+  const speed = 85 * parseFloat(diffRange.value); // Velocidad del jefe MUCHO más aumentada (antes 70)
+  const hp = 150; // Vida del jefe MUCHO más aumentada (antes 100)
+  const shootTimer = 0.15; // Jefe: Dispara aún más rápido (antes 0.2)
+  const numBullets = 40; // Jefe: Más balas (antes 30)
+
+  let bossImageToUse = bossImg;
+  // Fallback to a generic placeholder if bossImg isn't loaded or invalid
+  if (!bossImageToUse || !bossImageToUse.complete || bossImageToUse.naturalWidth === 0) {
+      bossImageToUse = new Image();
+      bossImageToUse.src = 'https://placehold.co/120x120/800080/FFFFFF?text=BOSS';
+  }
+
+  enemies.push({
+    x: W + 80,
+    y,
+    w: BOSS_SIZE.w,
+    h: BOSS_SIZE.h,
+    speed,
+    hp,
+    t:0,
+    shootTimer,
+    img: bossImageToUse,
+    isBoss: true,
+    numBullets,
+    maxRenderHp: 150 // Jefe: Su max HP para renderizar es 150
+  });
+}
+
+// Player's normal attack (Pegasus Ryū Sei Ken)
+function shootMeteor(){
+  const mSpeed = 640;
+  const mx = player.x + player.w*0.55;
+  const my = player.y;
+  meteors.push({ x: mx, y: my, vx: mSpeed, vy: 0, r: 10, t:0, special: false });
+  spawnParticles(mx, my, 6, 'rgba(100,180,255,0.95)');
+}
+
+// Player's special attack (multi-directional spread)
+function shootSpecialMeteor(){
+  const mSpeed = 720;
+  const mx = player.x + player.w*0.55;
+  const my = player.y;
+  const angles = [-Math.PI/6, -Math.PI/12, 0, Math.PI/12, Math.PI/6]; // -30°, -15°, 0°, 15°, 30°
+  for(const angle of angles){
+    meteors.push({
+      x: mx,
+      y: my,
+      vx: Math.cos(angle) * mSpeed,
+      vy: Math.sin(angle) * mSpeed,
+      r: 20,
       t: 0,
-      phase: Math.random(),
-      r: 22
+      special: true
+    });
+  }
+  spawnParticles(mx, my, 12, 'rgba(100,180,255,0.95)');
+  showTip('Pegasus Ryu Sei Ken');
+}
+
+// Helper to spawn particles for effects
+function spawnParticles(x,y,n=12,color='rgba(255,220,150,0.95)'){
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2;
+    const s = rand(60,260);
+    particles.push({ x,y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, life: rand(0.35,0.9), t:0, color, size: rand(1,3) });
+  }
+}
+
+// Helper to spawn an explosion effect
+function spawnExplosion(x,y,scale=1){
+  explosions.push({ x,y,t:0,life:0.6,scale });
+}
+
+// Helper to spawn a power-up item
+function spawnPowerUp(x,y){
+  const r = Math.random();
+  if(r < 0.20){ // Chance para 'health'
+    powerUps.push({ x, y, vx: -100, type: 'health', r: 12, t: 0, life: 5 });
+  } else if(r < 0.30){ // Chance para 'cosmo'
+    powerUps.push({ x, y, vx: -100, type: 'cosmo', r: 12, t: 0, life: 5 });
+  }
+}
+
+// Enemy's shooting behavior
+function enemyShoot(enemy){
+  if (enemy.isBoss) { // Boss specific shooting
+    const bulletSpeed = 250;
+    // For boss bullets, add a flag to make them undestroyable by player meteors
+    for (let i = 0; i < enemy.numBullets; i++) {
+      const angle = (Math.PI * 2 / enemy.numBullets) * i + enemy.t * 0.5; // Spread out, slightly rotating
+      enemyBullets.push({
+        x: enemy.x,
+        y: enemy.y,
+        vx: Math.cos(angle) * bulletSpeed,
+        vy: Math.sin(angle) * bulletSpeed,
+        r: 7,
+        t: 0,
+        isBossBullet: true // Flag for undestroyable boss bullets
+      });
+    }
+  } else { // Regular enemy shooting
+    const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+    const spd = rand(250, 380);
+    enemyBullets.push({
+      x: enemy.x - enemy.w*0.2,
+      y: enemy.y,
+      vx: Math.cos(angle) * spd,
+      vy: Math.sin(angle) * spd,
+      r: 7,
+      t: 0,
+      isBossBullet: false // Regular enemy bullets are destructible
     });
   }
 }
 
-function addBullet(arr, x,y, vx,vy, pol, owner){
-  arr.push({x,y,vx,vy,pol, r:(owner==='player'?6:7), owner});
-}
+// Main game update loop
+function update(dt){
+  if(paused || gameOver || gameWon) return;
 
-function enemyFire(e){
-  // radial pequeño
-  const n = 6;
-  for(let i=0;i<n;i++){
-    const a = i*(Math.PI*2/n) + e.t*0.6;
-    const sp = rand(120,180);
-    addBullet(enemyBullets, e.x, e.y, Math.cos(a)*sp, Math.sin(a)*sp, Math.random()<0.5?POL_WHITE:POL_BLACK, 'enemy');
+  // Player input movement
+  let dx=0, dy=0;
+  if(keys['a']||keys['arrowleft']) dx = -1;
+  if(keys['d']||keys['arrowright']) dx = 1;
+  if(keys['w']||keys['arrowup']) dy = -1;
+  if(keys['s']||keys['arrowdown']) dy = 1;
+  const len = Math.hypot(dx,dy) || 1;
+  player.x += (dx/len) * player.speed * dt;
+  player.y += (dy/len) * player.speed * dt;
+  player.x = clamp(player.x, 20, W - 20);
+  player.y = clamp(player.y, 36, H-36);
+
+  // Cosmo increase over time
+  // CAMBIO: Cosmo siempre al 100% en Nivel 4 (Jefe Final)
+  if (level === 4) {
+    player.cosmo = 100;
+  } else {
+    player.cosmo = clamp(player.cosmo + dt * 10, 0, 100);
   }
-  // dirigido
-  const ax = player.x - e.x, ay = player.y - e.y;
-  const a = Math.atan2(ay,ax);
-  addBullet(enemyBullets, e.x, e.y, Math.cos(a)*240, Math.sin(a)*240, Math.random()<0.5?POL_WHITE:POL_BLACK, 'enemy');
-}
 
-function burst(x,y,n=16,color='rgba(255,255,255,.9)'){
-  for(let i=0;i<n;i++){
-    particles.push({x,y, vx:Math.cos(Math.random()*Math.PI*2)*rand(30,220), vy:Math.sin(Math.random()*Math.PI*2)*rand(30,220), life:rand(.6,1.2), t:0, size:rand(1,3), color});
+  // Player shooting (normal)
+  player.reloadT += dt;
+  const isShootPressed = keys['z'] || keys[' '];
+  if(autoShot.checked ? player.reloadT >= player.reload : (isShootPressed && player.reloadT >= player.reload) ){
+    shootMeteor();
+    player.reloadT = 0;
   }
-}
 
-/* Lógica principal */
-function update(ts){
-  if(!last) last = ts; dt = Math.min(.033, (ts - last)/1000); last = ts;
-  if(!paused && !over){
-    tAcc += dt;
+  // Player special attack (requires Cosmo)
+  if(keys['x'] && player.cosmo >= 100){
+    shootSpecialMeteor();
+    player.cosmo -= 100;
+  }
 
-    // movimiento
-    let dx=0,dy=0;
-    if(keys['a']||keys['arrowleft']) dx=-1;
-    if(keys['d']||keys['arrowright']) dx=1;
-    if(keys['w']||keys['arrowup']) dy=-1;
-    if(keys['s']||keys['arrowdown']) dy=1;
-    const len = Math.hypot(dx,dy)||1;
-    player.x += (dx/len)*player.speed*dt;
-    player.y += (dy/len)*player.speed*dt;
-    player.x = clamp(player.x, 24, (canvas.width/(window.devicePixelRatio||1))-24);
-    player.y = clamp(player.y, 80, (canvas.height/(window.devicePixelRatio||1))-24);
+  // Level progression logic
+  // Nivel 4 (Jefe Final - El desafío definitivo)
+  if(score >= 15000 && level < 4){
+    level = 4;
+    enemies = [];
+    spawnBoss();
+    showTip('¡Jefe Final - El desafío definitivo!');
+  }
+  // Nivel 3 (¡Prepárate!) - Más difícil antes del jefe
+  else if(score >= 12000 && level < 3){
+    level = 3;
+    showTip('¡Nivel 3 - ¡Prepárate!');
+  }
+  // Nivel 2 (Dificultad normal)
+  else if(score >= 7000 && level < 2){
+    level = 2;
+    showTip('¡Nivel 2 - Dificultad normal!');
+  }
+  // Nivel 1 (Un poco más duro)
+  else if(score >= 3000 && level < 1){
+    level = 1;
+    showTip('¡Nivel 1 - Un poco más duro!');
+  }
 
-    // disparo
-    player.shootT += dt;
-    if((keys['z']||keys[' ']) && player.shootT >= player.shootCd){
-      player.shootT = 0;
-      addBullet(bullets, player.x-10, player.y-18, 0, -520, player.pol, 'player');
-      addBullet(bullets, player.x+10, player.y-18, 0, -520, player.pol, 'player');
-      burst(player.x, player.y+8, 6, player.pol===POL_WHITE? 'rgba(220,255,255,.9)':'rgba(120,120,120,.85)');
+
+  // Update meteors (player bullets)
+  for(let i=meteors.length-1;i>=0;i--){
+    const m = meteors[i];
+    m.x += m.vx * dt;
+    m.y += m.vy * dt;
+    if(m.x < -60 || m.x > W + 60 || m.y < -60 || m.y > H + 60) meteors.splice(i,1);
+  }
+
+  // Update power-ups and handle collection
+  for(let i=powerUps.length-1;i>=0;i--){
+    const p = powerUps[i];
+    p.x += p.vx * dt;
+    p.t += dt;
+    if(p.t > p.life || p.x < -40){
+      powerUps.splice(i,1);
+      continue;
     }
-
-    // alternar polaridad (antirebote)
-    if(keys['x'] && !keys._xPrev){ togglePolarity(); }
-    keys._xPrev = keys['x'];
-
-    // spawns
-    if(tAcc>2.2){ tAcc=0; spawnEnemyWave(); }
-
-    // enemigos
-    for(let i=enemies.length-1;i>=0;i--){
-      const e=enemies[i];
-      e.t += dt;
-      e.x += Math.sin(e.t*1.6 + e.phase)*20*dt + e.vx*dt;
-      e.y += e.vy*dt;
-      if(e.y > (canvas.height/(window.devicePixelRatio||1))+60) enemies.splice(i,1);
-      if(Math.random()<0.006 + 0.004*dt*60) enemyFire(e);
-    }
-
-    // balas jugador
-    for(let i=bullets.length-1;i>=0;i--){
-      const b=bullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt;
-      if(b.y<-30||b.y>(canvas.height/(window.devicePixelRatio||1))+30||b.x<-30||b.x>(canvas.width/(window.devicePixelRatio||1))+30){ bullets.splice(i,1); continue; }
-      for(let j=enemies.length-1;j>=0;j--){
-        const e=enemies[j];
-        if(Math.hypot(b.x-e.x,b.y-e.y) < e.r + b.r){
-          e.hp -= 1; bullets.splice(i,1);
-          burst(b.x,b.y,8,b.pol===POL_WHITE?'rgba(220,255,255,.9)':'rgba(140,140,140,.9)');
-          if(e.hp<=0){ score += 120; burst(e.x,e.y,28,'#ffd58a'); enemies.splice(j,1); }
-          else score += 20;
-          break;
-        }
+    if(circleRectIntersect(p.x, p.y, p.r, player.x-player.w/2, player.y-player.h/2, player.w, player.h)){
+      if(p.type === 'health'){
+        lives = clamp(lives + 1, 0, 7); // Increment lives (up to max 7)
+        player.hits = 0; // Restore current life's health to full
+        showTip('Extra Life'); // Mensaje revertido: Extra Life
+      } else if(p.type === 'cosmo'){
+        player.cosmo = clamp(player.cosmo + 50, 0, 100);
+        showTip('Cosmo Burn'); // Mensaje revertido: Cosmo Burn
       }
+      powerUps.splice(i,1);
+      // Particle color based on power-up type
+      const particleColor = p.type === 'health' ? '#ffcc66' : 'rgba(255,255,255,0.95)'; // Extra Life particles are yellow (health bar color)
+      spawnParticles(p.x, p.y, 8, particleColor);
+    }
+  }
+
+  // Enemy spawning
+  spawnT += dt;
+  if(spawnT > 0.75 && level < 4){ spawnT = 0; spawnEnemy(); } // Frecuencia de aparición reducida de 0.85 a 0.75
+
+  // Update enemies and handle player collision
+  for(let i=enemies.length-1;i>=0;i--){
+    const en = enemies[i];
+    en.x -= en.speed * dt;
+    en.t += dt;
+    en.y += Math.sin(en.t*3 + i) * 8 * dt;
+
+    // Enemy shooting timer
+    en.shootTimer -= dt;
+    if(en.shootTimer <= 0){
+      enemyShoot(en);
+      en.shootTimer = en.isBoss ? rand(0.15, 0.4) / parseFloat(diffRange.value) : rand(0.8, 2.2) / parseFloat(diffRange.value) / (1 + level * 0.15); // Boss shoots faster
     }
 
-    // balas enemigas
-    for(let i=enemyBullets.length-1;i>=0;i--){
-      const b=enemyBullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt;
-      if(b.y<-40||b.y>(canvas.height/(window.devicePixelRatio||1))+40||b.x<-40||b.x>(canvas.width/(window.devicePixelRatio||1))+40){ enemyBullets.splice(i,1); continue; }
-      // colisión con jugador
-      if(Math.hypot(b.x-player.x,b.y-player.y) < player.r + b.r){
-        if(b.pol === player.pol){
-          score += 10; burst(b.x,b.y,8,'rgba(200,255,255,.9)');
+    // Collision with player
+    if(rectIntersect(en.x-en.w/2, en.y-en.h/2, en.w, en.h, player.x-player.w/2, player.y-player.h/2, player.w, player.h)){
+      enemies.splice(i,1);
+      player.hits += 1;
+      if(player.hits >= 5){ // Player takes 5 hits to lose a life
+        lives -= 1;
+        player.hits = 0;
+      }
+      spawnExplosion(player.x + 10, player.y, 1);
+      spawnParticles(player.x, player.y, 20, 'rgba(255,110,110,0.95)');
+      if(lives <= 0) gameOver = true;
+    }
+  }
+
+  // Update enemy bullets and handle player collision
+  for(let i=enemyBullets.length-1;i>=0;i--){
+    const b = enemyBullets[i];
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+    b.t += dt;
+    if(b.x < -40 || b.x > W + 40 || b.y < -40 || b.y > H + 40){
+      enemyBullets.splice(i,1);
+      continue;
+    }
+    if(circleRectIntersect(b.x, b.y, b.r, player.x-player.w/2, player.y-player.h/2, player.w, player.h)){
+      enemyBullets.splice(i,1);
+      player.hits += 1;
+      if(player.hits >= 5){ // Player takes 5 hits to lose a life
+        lives -= 1;
+        player.hits = 0;
+      }
+      spawnExplosion(player.x, player.y, 0.9);
+      spawnParticles(player.x, player.y, 12, 'rgba(255,90,90,0.95)');
+      if(lives <= 0) gameOver = true;
+      continue;
+    }
+  }
+
+  // Meteor hits enemy logic
+  for(let i=meteors.length-1;i>=0;i--){
+    const m = meteors[i];
+    for(let j=enemies.length-1;j>=0;j--){
+      const en = enemies[j];
+      if(circleRectIntersect(m.x,m.y,m.r, en.x-en.w/2, en.y-en.h/2, en.w, en.h)){
+        en.hp -= m.special ? 3 : 1; // Special meteors do more damage
+        meteors.splice(i,1);
+        spawnParticles(m.x, m.y, 8, 'rgba(255,220,120,0.95)');
+        if(en.hp <= 0){
+          score += 120 + Math.floor(en.speed/40);
+          spawnExplosion(en.x, en.y, 1.2);
+          if(level < 4) spawnPowerUp(en.x, en.y); // Drop power-up if not boss level
+          enemies.splice(j,1);
+          if(level === 4 && enemies.length === 0){ // Game won if boss is defeated
+            gameWon = true;
+            showTip('"NUESTRO COSMO ES INMORTAL, VOY A ELEVAR MI COSMO HASTA EL INFINITO"'); // Updated game won message
+          }
         } else {
-          life -= 1; burst(player.x,player.y,18,'rgba(255,80,80,.9)'); if(life<=0) over=true;
+          score += 20; // Minor score for hitting
         }
-        enemyBullets.splice(i,1);
+        break;
       }
     }
-
-    // partículas
-    for(let i=particles.length-1;i>=0;i--){
-      const p=particles[i]; p.t+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=.98; p.vy*=.98; if(p.t>p.life) particles.splice(i,1);
-    }
-
-    // puntuación pasiva
-    score += dt*2;
   }
 
-  // HUD
-  HUD.score.textContent = 'Puntuación: ' + Math.floor(score);
-  HUD.life.textContent  = 'Vida: ' + life;
-  HUD.pol.textContent   = 'Polaridad: ' + (player.pol===POL_WHITE? 'BLANCO':'NEGRO');
+  // Meteor hits enemy bullet logic (bullets cancel each other out)
+  for(let i=meteors.length-1;i>=0;i--){
+    const m = meteors[i];
+    for(let j=enemyBullets.length-1;j>=0;j--){
+      const b = enemyBullets[j];
+      // Los ataques del jugador ahora destruyen TODAS las balas enemigas
+      if (circleRectIntersect(m.x, m.y, m.r, b.x - b.r, b.y - b.r, b.r * 2, b.r * 2)) {
+        meteors.splice(i,1);
+        enemyBullets.splice(j,1);
+        spawnParticles(m.x, m.y, 8, 'rgba(255,220,120,0.95)');
+        break;
+      }
+    }
+  }
 
-  render();
-  requestAnimationFrame(update);
+  // Update particles animation
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.t += dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vx *= 0.985; p.vy *= 0.985; // Slow down particles
+    if(p.t > p.life) particles.splice(i,1);
+  }
+
+  // Update explosions animation
+  for(let i=explosions.length-1;i>=0;i--){
+    const ex = explosions[i];
+    ex.t += dt;
+    if(ex.t > ex.life) explosions.splice(i,1);
+  }
+
+  // Random enemy shooting (for regular enemies)
+  // Boss shooting handled within enemy loop based on isBoss flag
+  if(Math.random() < 0.006 && enemies.length && level < 4){
+    const e = enemies[Math.floor(Math.random()*enemies.length)];
+    if (!e.isBoss) { // Only regular enemies fire randomly from here
+      enemyShoot(e);
+    }
+  }
+
+  // Update HUD text
+  levelText.textContent = 'Nivel: ' + (level === 4 ? 'Jefe Final' : level);
+  scoreText.textContent = 'Puntaje: ' + Math.floor(score);
+  lifeText.textContent = 'Vidas: ' + lives;
+  cosmoText.textContent = 'Cosmo: ' + Math.floor(player.cosmo) + '%';
 }
 
-function togglePolarity(){
-  player.pol *= -1; burst(player.x,player.y,16, player.pol===POL_WHITE? 'rgba(220,255,255,.9)':'rgba(110,110,110,.85)');
+// Intersection helper functions
+function rectIntersect(x1,y1,w1,h1,x2,y2,w2,h2){
+  return !(x2 > x1+w1 || x2+w2 < x1 || y2 > y1+h1 || y2+h2 < y1);
+}
+function circleRectIntersect(cx,cy,r, rx,ry,rw,rh){
+  const closestX = clamp(cx, rx, rx+rw);
+  const closestY = clamp(cy, ry, ry+rh);
+  const dx = cx - closestX, dy = cy - closestY;
+  return (dx*dx + dy*dy) <= (r*r);
 }
 
-/* Render */
+// Game rendering function
 function render(){
-  const W = canvas.width/(window.devicePixelRatio||1), H = canvas.height/(window.devicePixelRatio||1);
   ctx.clearRect(0,0,W,H);
 
-  // bandas de fondo
-  for(let i=0;i<bands.length;i++){
-    const b=bands[i];
-    const y = (b.y + Math.sin((Date.now()/1000)*b.speed + b.off)*b.amp + (i*10)) % (H+200) - 100;
-    const g = ctx.createLinearGradient(0,y,0,y+180);
-    g.addColorStop(0,'rgba(12,28,44,'+(0.08 + i*0.02)+')');
-    g.addColorStop(1,'rgba(6,12,24,'+(0.02 + i*0.01)+')');
-    ctx.fillStyle = g; ctx.fillRect(0,y,W,180);
+  // Render background image with seamless parallax
+  if(imgs.bg && imgs.bg.complete && imgs.bg.naturalWidth !== 0){
+    const backgroundSpeed = 42; // Speed of the background scroll
+    bgOff = (bgOff + backgroundSpeed * (1/60)); // Update offset based on a fixed frame rate (60fps)
+    const scaleY = H / imgs.bg.height; // Scale background to fit canvas height
+    const scaledWidth = imgs.bg.width * scaleY; // Calculate scaled width
+
+    // Ensure bgOff wraps around the scaled width of the background image for seamless looping
+    bgOff %= scaledWidth;
+
+    // Draw the image multiple times to cover the entire canvas width
+    // Draw the current segment
+    ctx.drawImage(imgs.bg, 0, 0, imgs.bg.width, imgs.bg.height, -bgOff, 0, scaledWidth, H);
+    // Draw the next segment to the right for seamless looping
+    ctx.drawImage(imgs.bg, 0, 0, imgs.bg.width, imgs.bg.height, scaledWidth - bgOff, 0, scaledWidth, H);
+
+    // If a significant portion of the image has scrolled past, you might need a third one
+    // to ensure full coverage, especially if the image width is less than canvas width.
+    if (scaledWidth < W) {
+        ctx.drawImage(imgs.bg, 0, 0, imgs.bg.width, imgs.bg.height, (scaledWidth * 2) - bgOff, 0, scaledWidth, H);
+    }
+
+  } else {
+    ctx.fillStyle = '#02061a'; // Fallback background color if image not loaded
+    ctx.fillRect(0,0,W,H);
   }
 
-  // estrellas
-  ctx.save(); ctx.globalCompositeOperation='lighter';
-  for(const s of stars){
-    const sx = (s.x + Math.sin(Date.now()/10000*s.s)*6) % W;
-    const sy = (s.y + (Date.now()/1000)*(s.s*0.01)) % H;
-    ctx.beginPath(); ctx.fillStyle='rgba(255,255,255,'+(0.06 + (s.r/2)*0.18)+')';
-    ctx.arc(sx,sy,s.r,0,Math.PI*2); ctx.fill();
+  // Render subtle background layers (for visual depth)
+  for(let i=0;i<5;i++){
+    ctx.fillStyle = 'rgba(6,12,24,' + (0.02 + i*0.008) + ')';
+    ctx.fillRect(0, i*80 + ((Date.now()/1000)*(6+i*3)) % 160 - 80, W, 80);
   }
-  ctx.restore();
 
-  // enemigos
+  // Render enemies
   for(const e of enemies){
-    ctx.save(); ctx.translate(e.x, e.y);
-    // glow
-    ctx.globalCompositeOperation='lighter'; ctx.fillStyle='rgba(255,200,120,.08)';
-    ctx.beginPath(); ctx.arc(0,0,e.r*1.8,0,Math.PI*2); ctx.fill();
-    ctx.globalCompositeOperation='source-over';
-    // cuerpo
-    ctx.fillStyle='#ffd58a';
-    ctx.beginPath(); ctx.moveTo(-e.r, e.r); ctx.quadraticCurveTo(0, -e.r*1.2, e.r, e.r); ctx.closePath(); ctx.fill();
-    // núcleo
-    ctx.fillStyle='#ffb84d'; ctx.beginPath(); ctx.arc(0,0,e.r*.6,0,Math.PI*2); ctx.fill();
-    ctx.restore();
+    if(e.img && e.img.complete && e.img.naturalWidth !== 0){
+      const w = e.w, h = e.h;
+      ctx.save();
+      ctx.translate(e.x, e.y);
+      ctx.rotate(Math.sin(e.t*2)*0.08);
+      ctx.drawImage(e.img, -w/2, -h/2, w, h);
+      ctx.restore();
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(e.x - e.w/2, e.y - e.h/2 - 10, e.w, 6);
+      ctx.fillStyle = '#ffcc66';
+      // Barra de salud renderizada usando maxRenderHp almacenado en el enemigo
+      const hpPerc = Math.max(0, e.hp) / e.maxRenderHp;
+      ctx.fillRect(e.x - e.w/2, e.y - e.h/2 - 10, e.w * hpPerc, 6);
+    } else {
+      ctx.fillStyle = '#ff9966';
+      ctx.fillRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h);
+    }
   }
 
-  // balas enemigas
+  // Render player's meteors
+  for(const m of meteors){
+    ctx.fillStyle = 'rgba(100,180,255,0.95)';
+    ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath(); ctx.fillStyle = 'rgba(100,180,255,0.12)'; ctx.arc(m.x, m.y, m.r*2.8, 0, Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // Render enemy bullets
   for(const b of enemyBullets){
     ctx.beginPath();
-    if(b.pol===POL_WHITE){
-      ctx.fillStyle='rgba(255,255,255,.95)'; ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.fillStyle='rgba(160,240,255,.85)'; ctx.arc(b.x,b.y,b.r*.55,0,Math.PI*2); ctx.fill();
-    } else {
-      ctx.fillStyle='rgba(30,30,30,.98)'; ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.fillStyle='rgba(150,150,150,.8)'; ctx.arc(b.x,b.y,b.r*.55,0,Math.PI*2); ctx.fill();
-    }
+    ctx.fillStyle = 'rgba(255,90,90,0.95)';
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath(); ctx.fillStyle = 'rgba(255,120,120,0.06)'; ctx.arc(b.x, b.y, b.r*3, 0, Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
   }
 
-  // jugador
-  drawPlayer(player.x, player.y, player.r, player.pol);
-
-  // balas jugador
-  for(const b of bullets){
+  // Render power-ups
+  for(const p of powerUps){
+    let powerUpColor;
+    if(p.type === 'health'){
+      powerUpColor = '#ffcc66'; // Extra Life is yellow (health bar color)
+    } else if(p.type === 'cosmo'){
+      powerUpColor = 'rgba(255,255,255,0.95)'; // White for cosmo
+    }
+    ctx.fillStyle = powerUpColor;
     ctx.beginPath();
-    if(b.pol===POL_WHITE){
-      const g = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r*2);
-      g.addColorStop(0,'rgba(200,255,255,.98)'); g.addColorStop(1,'rgba(120,200,220,.02)');
-      ctx.fillStyle=g; ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Render player (Seiya)
+  const pw = player.w, ph = player.h;
+  if(playerImg && playerImg.complete && playerImg.naturalWidth !== 0){
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    const ang = (player.x - 90)/400 * 0.15;
+    ctx.rotate(ang);
+    ctx.drawImage(playerImg, -pw/2, -ph/2, pw, ph);
+    ctx.restore();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath(); ctx.fillStyle = 'rgba(255,220,150,0.04)'; ctx.ellipse(player.x+6, player.y+6, pw*0.8, ph*0.3, 0, 0, Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    // Render player health bar
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(player.x - pw/2, player.y - ph/2 - 10, pw, 6);
+    ctx.fillStyle = '#ffcc66';
+    // Calculate health percentage based on `player.hits` (0-5, 0 is full health)
+    const currentHealthFraction = (5 - player.hits) / 5;
+    const hpPerc = Math.max(0, currentHealthFraction);
+    ctx.fillRect(player.x - pw/2, player.y - ph/2 - 10, pw * hpPerc, 6);
+    // Render player Cosmo bar
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(player.x - pw/2, player.y + ph/2 + 4, pw, 6);
+    ctx.fillStyle = '#ffffff';
+    const cosmoPerc = Math.max(0, player.cosmo) / 100; // Cosmo bar renderizado con límite de 100
+    ctx.fillRect(player.x - pw/2, player.y + ph/2 + 4, pw * cosmoPerc, 6);
+  } else {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(player.x, player.y, 22, 0, Math.PI*2); ctx.fill();
+    // Render player health bar
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(player.x - pw/2, player.y - ph/2 - 10, pw, 6);
+    ctx.fillStyle = '#ffcc66';
+    const currentHealthFraction = (5 - player.hits) / 5;
+    const hpPerc = Math.max(0, currentHealthFraction);
+    ctx.fillRect(player.x - pw/2, player.y - ph/2 - 10, pw * hpPerc, 6);
+    // Render player Cosmo bar
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(player.x - pw/2, player.y + ph/2 + 4, pw, 6);
+    ctx.fillStyle = '#ffffff';
+    const cosmoPerc = Math.max(0, player.cosmo) / 100; // Cosmo bar renderizado con límite de 100
+    ctx.fillRect(player.x - pw/2, player.y + ph/2 + 4, pw * cosmoPerc, 6);
+  }
+
+  // Render particles
+  for(const p of particles){
+    const a = 1 - (p.t / p.life);
+    ctx.globalAlpha = clamp(a,0,1);
+    if(imgs.star && imgs.star.complete && imgs.star.naturalWidth !== 0 && p.color !== 'rgba(100,180,255,0.95)'){
+      const s = p.size*3 + (1-a)*6;
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.drawImage(imgs.star, p.x - s/2, p.y - s/2, s, s);
+      ctx.globalCompositeOperation = 'source-over';
     } else {
-      const g = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r*2);
-      g.addColorStop(0,'rgba(120,120,120,.98)'); g.addColorStop(1,'rgba(30,30,30,.02)');
-      ctx.fillStyle=g; ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Render explosions
+  for(const ex of explosions){
+    const t = ex.t / ex.life;
+    const s = 36 * (1 + t*2) * ex.scale;
+    if(imgs.explosion && imgs.explosion.complete && imgs.explosion.naturalWidth !== 0){
+      ctx.globalAlpha = clamp(1 - t, 0, 1);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.drawImage(imgs.explosion, ex.x - s/2, ex.y - s/2, s, s);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.fillStyle = 'rgba(255,200,80,' + (1 - t) + ')';
+      ctx.beginPath(); ctx.arc(ex.x, ex.y, s/2, 0, Math.PI*2); ctx.fill();
     }
   }
 
-  // partículas
-  for(const p of particles){
-    const a = 1 - (p.t / p.life); ctx.globalAlpha = Math.max(0,Math.min(1,a));
-    ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
-  }
+  // Overlay gradient for visual depth
+  const vg = ctx.createLinearGradient(0,0,0,H);
+  vg.addColorStop(0,'rgba(0,0,0,0.06)');
+  vg.addColorStop(0.6,'rgba(0,0,0,0)');
+  vg.addColorStop(1,'rgba(0,0,0,0.22)');
+  ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
 
-  // viñeta suave
-  const vg = ctx.createLinearGradient(0,0,0,H); vg.addColorStop(0,'rgba(0,0,0,.18)'); vg.addColorStop(.6,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.25)');
-  ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
-
-  // overlays
-  if(paused || over){
-    ctx.save(); ctx.fillStyle='rgba(4,8,14,.6)'; ctx.fillRect(W*.12,H*.36,W*.76,H*.28); ctx.restore();
+  // Render game state messages (Paused, Game Over, Game Won)
+  if(paused || gameOver || gameWon){
+    ctx.save();
+    ctx.fillStyle = 'rgba(4,8,14,0.6)';
+    ctx.fillRect(W*0.12, H*0.28, W*0.76, H*0.44);
+    ctx.fillStyle = '#e6f7ff';
+    ctx.textAlign = 'center';
+    ctx.font = '28px Inter, sans-serif';
+    if(paused) ctx.fillText('PAUSADO', W*0.5, H*0.46);
+    if(gameOver){
+      ctx.fillStyle = '#ffd9d9';
+      ctx.fillText('GAME OVER', W*0.5, H*0.44);
+      ctx.fillStyle = '#e6f7ff';
+      ctx.font = '16px Inter, sans-serif';
+      ctx.fillText('Presiona R para reiniciar', W*0.5, H*0.52);
+      ctx.fillText('Puntaje: ' + Math.floor(score), W*0.5, H*0.58);
+    }
+    if(gameWon){
+      ctx.fillStyle = '#d9ffd9';
+      ctx.fillText('¡VICTORIA!', W*0.5, H*0.44);
+      ctx.fillStyle = '#e6f7ff';
+      ctx.font = '16px Inter, sans-serif';
+      ctx.fillText('"NUESTRO COSMO ES INMORTAL, VOY A ELEVAR MI COSMO HASTA EL INFINITO"', W*0.5, H*0.52, W*0.7); // Updated game won message text
+      ctx.fillText('Puntaje: ' + Math.floor(score), W*0.5, H*0.58);
+    }
+    ctx.restore();
   }
 }
 
-function drawPlayer(x,y,r,pol){
-  ctx.save(); ctx.translate(x,y); ctx.rotate(Math.sin(Date.now()/300)*0.06);
-  const g = ctx.createLinearGradient(-r,-r,r,r);
-  if(pol===POL_WHITE){ g.addColorStop(0,'#ffffff'); g.addColorStop(1,'#c1f7ff'); }
-  else { g.addColorStop(0,'#151515'); g.addColorStop(1,'#6e6e6e'); }
-  ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(-r*1.2, r*.8); ctx.quadraticCurveTo(0, -r*1.4, r*1.2, r*.8); ctx.lineTo(0,r*.3); ctx.closePath(); ctx.fill();
-  ctx.globalCompositeOperation='lighter'; ctx.beginPath(); ctx.fillStyle= pol===POL_WHITE? 'rgba(200,255,255,.15)':'rgba(120,120,120,.12)'; ctx.arc(0,-r*.1,r*1.05,0,Math.PI*2); ctx.fill(); ctx.globalCompositeOperation='source-over';
-  ctx.restore();
-}
+// main loop
+function loop(ts){
+  if(!lastTime) lastTime = ts;
+  const dt = Math.min(0.033, (ts - lastTime)/1000);
+  lastTime = ts;
 
-/* Pausa y reinicio */
-addEventListener('keydown', e=>{
-  const k=e.key.toLowerCase();
-  if(k==='p'){ paused=!paused; HUD.overlay.style.display = paused? 'block':'none'; HUD.overlayText.textContent = 'PAUSADO'; HUD.restart.style.display='none'; }
-  if(k==='r' && over){ reset(); }
+  // Eliminado el intento de reproducir música de fondo
+  // if (!musicStarted && !paused && !gameOver && !gameWon) {
+  //     bgMusic.play().then(() => {
+  //         musicStarted = true;
+  //     }).catch(e => {
+  //         // Autoplay blocked, user interaction needed to play music:, e);
+  //         console.log("Autoplay blocked, user interaction needed to play music:", e);
+  //     });
+  // }
+
+  if(!paused && !gameOver && !gameWon) update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// input extras
+window.addEventListener('keydown', e=>{
+  if(e.key.toLowerCase() === 'p'){ paused = !paused; showTip(paused? 'Pausado' : 'Reanudado'); }
+  if(e.key.toLowerCase() === 'r'){ // Reinicio sin condición de gameOver o gameWon
+    score = 0; lives = 7; level = 0; player.x = 90; player.y = H*0.5; player.hits = 0; player.cosmo = 0; // Vidas reiniciadas a 7
+    enemies = []; meteors = []; particles=[]; explosions=[]; enemyBullets=[]; powerUps=[]; gameOver=false; gameWon=false; bgOff = 0;
+    showTip('Reiniciado');
+    for(let i=0;i<3;i++) spawnEnemy(); // Re-spawn initial enemies
+  }
 });
-HUD.restart.addEventListener('click', reset);
 
-function reset(){
-  bullets.length=0; enemyBullets.length=0; enemies.length=0; particles.length=0;
-  score=0; life=5; over=false; paused=false;
-  player.x = (canvas.width/(window.devicePixelRatio||1))/2; player.y = 760; player.pol = POL_WHITE;
-  HUD.overlay.style.display='none';
-}
+canvas.addEventListener('dblclick', ()=>{ paused = !paused; showTip(paused? 'Pausado' : 'Reanudado'); });
 
-// comprobación de fin de juego mediante vida
-const checkOver = setInterval(()=>{
-  if(life<=0 && !over){ over=true; HUD.overlay.style.display='block'; HUD.overlayText.textContent='GAME OVER'; HUD.restart.style.display='inline-block'; }
-}, 100);
-
-// generador de disparos extra para enemigos
-setInterval(()=>{ if(Math.random()<0.06 && enemies.length){ const e=enemies[Math.floor(Math.random()*enemies.length)]; enemyFire(e); } }, 400);
-setInterval(()=>{ for(const e of enemies){ if(Math.random()<0.28) enemyFire(e); } }, 1200);
-
-requestAnimationFrame(update);
+// Initial game setup: spawn a few enemies to start
+for(let i=0;i<3;i++) spawnEnemy();
 </script>
 </body>
 </html>
