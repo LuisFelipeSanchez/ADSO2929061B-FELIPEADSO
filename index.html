@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADSO 2929061</title>
     <link rel="stylesheet" href="css/master.css">
+ <style>
+        div.menus {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+            h3 {
+                color: #fff9;
+            }
+        }
+        @media screen and (max-width: 580px) {
+            div.menus {
+                flex-direction: column;
+            }
+        }
+        a.inactive {
+                opacity: 0.5;
+                pointer-events: none;
+            }
+</style>
 </head>
 <body>
     <main>
@@ -96,6 +115,7 @@
     </main>  
 </body>
 </html>
+
 
 
 
