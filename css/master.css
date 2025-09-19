@@ -123,6 +123,8 @@ body.jquery {
                     img{
                         object-fit: contain;
                         border-color: var(--color-1);
+width: 40px; /* Ajusta este valor al tamaño que necesites */
+            height: 40px; /* Ajusta este valor al tamaño que necesites */
                     }
                 }
                 menu{
@@ -171,3 +173,4 @@ body.jquery {
             }
     
         }
+
