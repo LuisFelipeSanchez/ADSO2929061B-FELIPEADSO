@@ -123,8 +123,6 @@ body.jquery {
                     img{
                         object-fit: contain;
                         border-color: var(--color-1);
-width: 40px; /* Ajusta este valor al tamaño que necesites */
-            height: 40px; /* Ajusta este valor al tamaño que necesites */
                     }
                 }
                 menu{
@@ -152,8 +150,8 @@ width: 40px; /* Ajusta este valor al tamaño que necesites */
                     text-decoration: none;
                     transition: all 0.4s ease-in;
                     gap: 0.6rem;
-                    width: 40px;
-                    height: 40px;
+                    width: 240px;
+               
                 }
                 a:is(:hover){
                     border: 0 solid;
@@ -174,6 +172,7 @@ width: 40px; /* Ajusta este valor al tamaño que necesites */
             }
     
         }
+
 
 
 
