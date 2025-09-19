@@ -152,7 +152,7 @@ width: 40px; /* Ajusta este valor al tamaño que necesites */
                     text-decoration: none;
                     transition: all 0.4s ease-in;
                     gap: 0.6rem;
-                    width: 240px;
+                    width: 40px;
                     height: 40px;
                 }
                 a:is(:hover){
@@ -174,5 +174,6 @@ width: 40px; /* Ajusta este valor al tamaño que necesites */
             }
     
         }
+
 
 
